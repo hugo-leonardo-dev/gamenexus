@@ -122,8 +122,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
     async jwt({ token, account, profile }) {
-      // Na primeira autenticação, associa o ID do banco ao token
+      // Na primeira autenticação (só acontece uma vez):
+      // Guarda o discordId no token para uso futuro e já tenta buscar o usuário
       if (account && profile?.id) {
+        token.discordId = profile.id as string;
+
         try {
           const dbUser = await prisma.user.findUnique({
             where: { discordId: profile.id as string },
@@ -133,9 +136,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         } catch (err) {
           console.error("[auth] JWT: findUnique falhou:", err);
-          // Se o DB estiver offline, o token.id fica undefined.
-          // O dashboard está protegido por getGroupsSafe() e mostrará
-          // uma mensagem amigável em vez de crashar.
+        }
+      }
+
+      // Em chamadas subsequentes: se ainda não temos o token.id,
+      // tenta novamente usando o discordId salvo no token.
+      // Isso permite recuperar de falhas temporárias de conexão.
+      if (!token.id && token.discordId) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { discordId: token.discordId as string },
+            select: { id: true },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+          }
+        } catch (err) {
+          console.error("[auth] JWT: findUnique subsequente falhou:", err);
         }
       }
 
