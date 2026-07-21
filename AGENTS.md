@@ -1,12 +1,12 @@
 # 🤖 Agents & System Design (agents.md)
 
-Este documento define a especificação técnica, o escopo de funcionalidades e o fluxo de agentes/serviços automáticos para o sistema de **Backlog de Jogos Cooperativo**.
+Este documento define a especificação técnica, o escopo de funcionalidades e o fluxo de agentes/serviços automáticos para o sistema **GameNexus**.
 
 ---
 
 ## 1. Escopo do Produto
 
-Aplicação web colaborativa para grupos de amigos gerenciarem backlogs de jogos.
+Aplicação web colaborativa para grupos de amigos gerenciarem seus jogos.
 
 ### Funcionalidades principais
 

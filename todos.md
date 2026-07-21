@@ -1,4 +1,4 @@
-# 📋 Backlog de Jogos — Plano de Desenvolvimento
+# 📋 GameNexus — Plano de Desenvolvimento
 
 > **Status dos símbolos:** ✅ Done | 🔄 Doing | ⏳ To Do | 🚫 Blocked | ❌ Removido
 

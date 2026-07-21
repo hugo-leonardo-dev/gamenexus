@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Press_Start_2P, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/ui/SessionProvider";
 import { ToastProvider } from "@/components/ui/ToastProvider";
@@ -15,14 +15,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const pressStart2P = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pixel",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
-    template: "%s | Backlog",
-    default: "Backlog - Gerencie seus jogos com amigos",
+    template: "%s | GameNexus",
+    default: "GameNexus - Gerencie seus jogos com amigos",
   },
   description:
-    "Aplicação colaborativa para grupos de amigos gerenciarem backlogs de jogos.",
-  keywords: ["jogos", "backlog", "steam", "grupo", "amigos", "cooperativo"],
+    "Aplicação colaborativa para grupos de amigos gerenciarem seus jogos.",
+  keywords: ["jogos", "gamenextus", "steam", "grupo", "amigos", "cooperativo", "backlog", "jogos cooperativos"],
 };
 
 export default function RootLayout({
@@ -33,11 +40,17 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-zinc-950 font-sans text-zinc-100">
+      <body className="min-h-full bg-retro-bg font-sans text-retro-text">
         <SessionProvider>
           <ToastProvider>
+            {/* Scanline overlay */}
+            <div className="fixed inset-0 pointer-events-none z-[9999] scanline-overlay" />
+            {/* CRT glow */}
+            <div className="fixed inset-0 pointer-events-none z-[9998] crt-glow opacity-20" />
+            {/* Vignette */}
+            <div className="fixed inset-0 pointer-events-none z-[9997] vignette-overlay" />
             <Navbar />
             <main className="flex min-h-[calc(100vh-4rem)] flex-col">
               {children}

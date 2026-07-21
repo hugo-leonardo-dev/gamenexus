@@ -31,7 +31,7 @@ async function fetchBatchPrices(
 
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "BacklogApp/1.0 (cron job de atualização de preços)",
+      "User-Agent": "GameNexusApp/1.0 (cron job de atualização de preços)",
     },
     signal: AbortSignal.timeout(15000),
   });

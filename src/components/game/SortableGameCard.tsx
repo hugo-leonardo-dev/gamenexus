@@ -48,7 +48,7 @@ export function SortableGameCard({ game, groupId }: SortableGameCardProps) {
       });
 
       if (res.ok) {
-        addToast(`"${game.title}" removido do backlog`, "success");
+        addToast(`"${game.title}" removido do GameNexus`, "success");
         router.refresh();
       } else {
         const data = await res.json();
@@ -84,7 +84,7 @@ export function SortableGameCard({ game, groupId }: SortableGameCardProps) {
           setShowConfirm(true);
         }}
         disabled={deleting}
-        className="absolute -right-2 -top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-500 opacity-0 shadow-lg transition-all duration-200 hover:border-red-600 hover:bg-red-600 hover:text-white group-hover/card:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className="absolute -right-2 -top-2 z-20 flex h-7 w-7 items-center justify-center pixel-btn bg-retro-surface text-retro-text-dim opacity-0 border-2 border-retro-border hover:border-retro-red hover:bg-retro-red hover:text-white group-hover/card:opacity-100 focus:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
         title={`Remover ${game.title}`}
         aria-label={`Remover ${game.title}`}
       >
@@ -118,14 +118,14 @@ export function SortableGameCard({ game, groupId }: SortableGameCardProps) {
           }}
         >
           <div
-            className="mx-4 w-full max-w-[260px] rounded-xl border border-zinc-700 bg-zinc-900 p-4 shadow-2xl"
+            className="mx-4 w-full max-w-[260px] pixel-card p-4"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
             }}
           >
-            <p className="mb-3 text-center text-sm font-medium text-zinc-200">
-              Remover <span className="font-semibold text-white">{game.title}</span>?
+            <p className="mb-3 text-center font-pixel text-[9px] text-retro-text">
+              REMOVER <span className="text-retro-primary">{game.title}</span>?
             </p>
             <div className="flex gap-2">
               <button
@@ -134,9 +134,9 @@ export function SortableGameCard({ game, groupId }: SortableGameCardProps) {
                   e.preventDefault();
                   setShowConfirm(false);
                 }}
-                className="flex-1 rounded-lg border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                className="pixel-btn flex-1 bg-retro-surface px-3 py-2 text-[8px] text-retro-text border-2 border-retro-border"
               >
-                Cancelar
+                CANCELAR
               </button>
               <button
                 onClick={(e) => {
@@ -144,9 +144,9 @@ export function SortableGameCard({ game, groupId }: SortableGameCardProps) {
                   e.preventDefault();
                   handleDelete();
                 }}
-                className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-red-500"
+                className="pixel-btn flex-1 bg-retro-red px-3 py-2 text-[8px] text-white"
               >
-                Remover
+                REMOVER
               </button>
             </div>
           </div>

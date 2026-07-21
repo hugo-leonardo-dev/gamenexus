@@ -1,72 +1,306 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-}
+/* ─── Retro Pixel Art Theme ───────────────────────────────────────────── */
+/* Inspired by classic 80s/90s RPGs: Zelda, Final Fantasy, Chrono Trigger */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Retro palette */
+  --color-retro-bg: #0d0d1a;
+  --color-retro-surface: #1a1a30;
+  --color-retro-surface-hover: #252545;
+  --color-retro-border: #2a2a50;
+  --color-retro-border-light: #3a3a6a;
+  --color-retro-primary: #4a7cff;
+  --color-retro-accent: #ffd700;
+  --color-retro-green: #40ff80;
+  --color-retro-red: #ff3355;
+  --color-retro-amber: #ffb000;
+  --color-retro-purple: #8b5cf6;
+  --color-retro-cyan: #00e5ff;
+  --color-retro-text: #d0d0f0;
+  --color-retro-text-dim: #6a6a90;
+  --color-retro-text-bright: #ffffff;
+  --color-retro-card-bg: #12122a;
+
+  /* Pixel font */
+  --font-pixel: var(--font-pixel);
+
+  /* Retain Geist for body */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ─── Base ────────────────────────────────────────────────────────────── */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-retro-bg);
+  color: var(--color-retro-text);
+  font-family: var(--font-sans);
 }
 
-/* ─── Animações ───────────────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(74, 124, 255, 0.4);
+  color: #fff;
+}
 
-@keyframes slide-in-from-right {
-  from {
+/* ─── Scanline Overlay ────────────────────────────────────────────────── */
+
+.scanline-overlay {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+}
+
+/* ─── CRT Glow ────────────────────────────────────────────────────────── */
+
+.crt-glow {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(74, 124, 255, 0.06) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ─── Vignette ────────────────────────────────────────────────────────── */
+
+.vignette-overlay {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+}
+
+/* ─── Pixel Border Utility ────────────────────────────────────────────── */
+
+.pixel-border {
+  box-shadow:
+    /* Bottom */ 0 2px 0 0 var(--color-retro-border-light),
+    /* Right */ 2px 0 0 0 var(--color-retro-border-light),
+    /* Top */ 0 -2px 0 0 var(--color-retro-border),
+    /* Left */ -2px 0 0 0 var(--color-retro-border);
+}
+
+.pixel-border-sm {
+  box-shadow:
+    0 1px 0 0 var(--color-retro-border-light),
+    1px 0 0 0 var(--color-retro-border-light),
+    0 -1px 0 0 var(--color-retro-border),
+    -1px 0 0 0 var(--color-retro-border);
+}
+
+.pixel-border-accent {
+  box-shadow:
+    0 2px 0 0 var(--color-retro-primary),
+    2px 0 0 0 var(--color-retro-primary),
+    0 -2px 0 0 #3a5fcc,
+    -2px 0 0 0 #3a5fcc;
+}
+
+.pixel-border-glow {
+  box-shadow:
+    0 2px 0 0 var(--color-retro-border-light),
+    2px 0 0 0 var(--color-retro-border-light),
+    0 -2px 0 0 var(--color-retro-border),
+    -2px 0 0 0 var(--color-retro-border),
+    0 0 20px rgba(74, 124, 255, 0.15);
+}
+
+/* ─── Card Pixel Border (like a game cartridge) ───────────────────────── */
+
+.pixel-card {
+  background: var(--color-retro-card-bg);
+  box-shadow:
+    /* Outset border layer */ 0 3px 0 0 var(--color-retro-border-light),
+    3px 0 0 0 var(--color-retro-border-light),
+    0 -3px 0 0 var(--color-retro-border),
+    -3px 0 0 0 var(--color-retro-border),
+    /* Shadow */ 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Press Start 2P font utility ─────────────────────────────────────── */
+
+.font-pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.05em;
+  /* Improve readability at small sizes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Pixel image rendering ───────────────────────────────────────────── */
+
+.pixel-image {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* ─── CRT Screen (for Kanban columns) ─────────────────────────────────── */
+
+.crt-screen {
+  background: var(--color-retro-surface);
+  border: 2px solid var(--color-retro-border);
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(74, 124, 255, 0.08);
+}
+
+/* ─── Pixel Button ────────────────────────────────────────────────────── */
+
+.pixel-btn {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow:
+    0 2px 0 0 rgba(0, 0, 0, 0.3),
+    2px 0 0 0 rgba(0, 0, 0, 0.3),
+    0 -1px 0 0 rgba(255, 255, 255, 0.1),
+    -1px 0 0 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.1s ease;
+}
+
+.pixel-btn:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 0 rgba(0, 0, 0, 0.3),
+    1px 0 0 0 rgba(0, 0, 0, 0.3),
+    0 -1px 0 0 rgba(255, 255, 255, 0.1),
+    -1px 0 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.pixel-btn:disabled {
+  opacity: 0.4;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* ─── Retro Input ─────────────────────────────────────────────────────── */
+
+.retro-input {
+  background: #0a0a18;
+  border: 2px solid var(--color-retro-border);
+  color: var(--color-retro-text);
+  font-family: var(--font-sans);
+  transition: all 0.15s ease;
+}
+
+.retro-input:focus {
+  outline: none;
+  border-color: var(--color-retro-primary);
+  box-shadow:
+    0 0 0 1px rgba(74, 124, 255, 0.2),
+    0 0 12px rgba(74, 124, 255, 0.1);
+}
+
+.retro-input::placeholder {
+  color: var(--color-retro-text-dim);
+  opacity: 0.6;
+}
+
+/* ─── Badge Pixel ─────────────────────────────────────────────────────── */
+
+.pixel-badge {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────── */
+
+@keyframes crt-on {
+  0% {
     opacity: 0;
-    transform: translateX(100%) scale(0.95);
+    filter: brightness(3) blur(10px);
   }
-  to {
+  30% {
+    opacity: 0.8;
+    filter: brightness(2) blur(2px);
+  }
+  60% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    filter: brightness(1.5) blur(1px);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1) blur(0);
   }
 }
 
-@keyframes fade-in {
-  from {
+@keyframes scanline-move {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes float-up {
+  0% {
     opacity: 0;
+    transform: translateY(8px);
   }
-  to {
+  100% {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(74, 124, 255, 0.2);
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
+  50% {
+    box-shadow: 0 0 20px rgba(74, 124, 255, 0.4);
   }
 }
 
-.animate-slide-in {
-  animation: slide-in-from-right 0.3s ease-out;
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
+.animate-crt-on {
+  animation: crt-on 0.6s ease-out;
 }
 
-.animate-scale-in {
-  animation: scale-in 0.2s ease-out;
+.animate-flicker {
+  animation: flicker 3s infinite;
 }
 
-/* ─── Scrollbar customizada ───────────────────────────────────────────────── */
+.animate-float-up {
+  animation: float-up 0.3s ease-out;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* ─── Scrollbar customizada (retro) ───────────────────────────────────── */
 
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgba(63, 63, 70, 0.5) transparent;
+  scrollbar-color: rgba(58, 58, 106, 0.5) transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -78,25 +312,10 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(63, 63, 70, 0.5);
-  border-radius: 9999px;
+  background-color: rgba(58, 58, 106, 0.5);
+  border-radius: 0;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(63, 63, 70, 0.8);
-}
-
-/* ─── Selection ──────────────────────────────────────────────────────────── */
-
-::selection {
-  background-color: rgba(99, 102, 241, 0.3);
-  color: #fff;
-}
-
-/* ─── Focus ring global ──────────────────────────────────────────────────── */
-
-*:focus-visible {
-  outline: 2px solid rgba(99, 102, 241, 0.5);
-  outline-offset: 2px;
-  border-radius: 4px;
+  background-color: rgba(58, 58, 106, 0.8);
 }

@@ -48,9 +48,9 @@ export function MemberList({
   }
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-4">
-      <span className="text-xs font-medium text-zinc-500">
-        Membros ({members.length}):
+    <div className="mt-4 flex flex-wrap items-center gap-2 border-t-2 border-retro-border pt-4">
+      <span className="font-pixel text-[7px] text-retro-text-dim uppercase tracking-wider">
+        ▸ MEMBROS ({members.length}):
       </span>
       {members.map((member) => {
         const isCurrentUser = member.userId === currentUserId;
@@ -60,73 +60,49 @@ export function MemberList({
         return (
           <div
             key={member.id}
-            className={`group/member flex items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-all ${
+            className={`group/member flex items-center gap-1.5 pixel-border-sm px-2.5 py-1 transition-all ${
               canRemove
-                ? "bg-zinc-800/80 pr-1 hover:bg-red-950/30 hover:pr-1"
-                : "bg-zinc-800/80"
+                ? "bg-retro-surface pr-1 hover:bg-retro-red/10 hover:pr-1"
+                : "bg-retro-surface"
             } ${isRemoving ? "opacity-50" : ""}`}
           >
             {member.user.avatarUrl ? (
               <img
                 src={member.user.avatarUrl}
                 alt=""
-                className="h-5 w-5 rounded-full"
+                className="h-5 w-5"
+                style={{imageRendering: 'pixelated', borderRadius: 0}}
               />
             ) : (
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 text-[10px] text-zinc-400">
+              <div className="flex h-5 w-5 items-center justify-center bg-retro-border text-[8px] text-retro-text-dim font-pixel">
                 {member.user.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-zinc-300">
+            <span className="font-pixel text-[7px] text-retro-text">
               {member.user.name}
               {isCurrentUser && (
-                <span className="ml-1 text-zinc-500">(você)</span>
+                <span className="ml-1 text-retro-text-dim">(VOCÊ)</span>
               )}
             </span>
             {member.role === "OWNER" && (
-              <span className="text-[10px] text-indigo-400" title="Dono do grupo">★</span>
+              <span className="font-pixel text-[7px] text-retro-accent" title="Dono do grupo">★</span>
             )}
             {canRemove && (
               <button
                 onClick={() => handleRemove(member)}
                 disabled={isRemoving}
-                className="ml-0.5 flex h-5 w-5 items-center justify-center rounded-full text-zinc-600 opacity-0 transition-all hover:bg-red-600 hover:text-white group-hover/member:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:opacity-0"
+                className="ml-0.5 flex h-5 w-5 items-center justify-center text-retro-text-dim opacity-0 transition-all hover:bg-retro-red hover:text-white group-hover/member:opacity-100 focus:opacity-100 disabled:opacity-0"
                 title={`Remover ${member.user.name}`}
                 aria-label={`Remover ${member.user.name} do grupo`}
               >
                 {isRemoving ? (
-                  <svg
-                    className="h-3 w-3 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
+                  <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 ) : (
-                  <svg
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18 18 6M6 6l12 12"
-                    />
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                   </svg>
                 )}
               </button>

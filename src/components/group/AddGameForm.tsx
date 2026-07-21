@@ -12,10 +12,16 @@ interface AddGameFormProps {
  */
 export function AddGameForm({ groupId }: AddGameFormProps) {
   return (
-    <div className="space-y-1">
+    <div className="crt-screen p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="h-2 w-2 bg-retro-green animate-blink" />
+        <span className="font-pixel text-[8px] text-retro-text-dim uppercase tracking-wider">
+          ADICIONAR JOGO
+        </span>
+      </div>
       <GameSearchInput groupId={groupId} />
-      <p className="text-[11px] text-zinc-600">
-        Digite o nome do jogo para buscar, ou cole um link da Steam (ex: store.steampowered.com/app/730)
+      <p className="mt-2 font-pixel text-[7px] text-retro-text-dim">
+        DIGITE O NOME DO JOGO PARA BUSCAR, OU COLE UM LINK DA STEAM
       </p>
     </div>
   );

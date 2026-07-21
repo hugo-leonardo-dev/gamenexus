@@ -1,10 +1,10 @@
 <grammar>
-Goal = Create a comprehensive README.md for the Backlog project.
+Goal = Create a comprehensive README.md for the GameNexus project.
 </grammar>
 
-# 🎮 Backlog de Jogos
+# 🎮 GameNexus
 
-Aplicação web colaborativa para grupos de amigos gerenciarem backlogs de jogos. Adicione jogos da Steam, organize em Kanban (Quero Jogar / Jogando / Finalizados) e acompanhe promoções.
+Aplicação web colaborativa para grupos de amigos gerenciarem seus jogos. Adicione jogos da Steam, organize em Kanban (Quero Jogar / Jogando / Finalizados / Dropados) e acompanhe promoções.
 
 ---
 
@@ -35,8 +35,8 @@ Aplicação web colaborativa para grupos de amigos gerenciarem backlogs de jogos
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/backlog.git
-cd backlog
+git clone https://github.com/seu-usuario/gamenexus.git
+cd gamenexus
 ```
 
 ### 2. Instale as dependências
@@ -81,7 +81,7 @@ Acesse [http://localhost:3000](http://localhost:3000) 🎉
 
 | Variável | Obrigatória | Descrição |
 |----------|-------------|-----------|
-| `DATABASE_URL` | ✅ | URL de conexão do PostgreSQL. Ex: `postgresql://user:password@localhost:5432/backlog` |
+| `DATABASE_URL` | ✅ | URL de conexão do PostgreSQL. Ex: `postgresql://user:password@localhost:5432/gamenexus` |
 | `AUTH_SECRET` | ✅ | Chave secreta para encriptar tokens JWT e cookies. Gere com: `openssl rand -base64 32` |
 | `AUTH_DISCORD_ID` | ✅ | Client ID do seu app Discord |
 | `AUTH_DISCORD_SECRET` | ✅ | Client Secret do seu app Discord |

@@ -139,7 +139,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
 
         if (!res.ok) {
           if (res.status === 409) {
-            addToast("Este jogo já está no backlog!", "info");
+            addToast("Este jogo já está no GameNexus!", "info");
           } else {
             addToast(data.error || "Erro ao adicionar jogo", "error");
           }
@@ -148,7 +148,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
 
         setInputValue("");
         setSearchResults([]);
-        addToast(`${data.game.title} adicionado ao backlog!`, "success");
+        addToast(`${data.game.title} adicionado ao GameNexus!`, "success");
         router.refresh();
         inputRef.current?.focus();
       } catch {
@@ -176,7 +176,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
 
         if (!res.ok) {
           if (res.status === 409) {
-            addToast("Este jogo já está no backlog!", "info");
+            addToast("Este jogo já está no GameNexus!", "info");
           } else {
             addToast(data.error || "Erro ao adicionar jogo", "error");
           }
@@ -184,7 +184,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
         }
 
         setInputValue("");
-        addToast(`${data.game.title} adicionado ao backlog!`, "success");
+        addToast(`${data.game.title} adicionado ao GameNexus!`, "success");
         router.refresh();
         inputRef.current?.focus();
       } catch {
@@ -288,7 +288,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
             if (searchResults.length > 0) setShowDropdown(true);
           }}
           placeholder={placeholder}
-          className="w-full rounded-xl border border-zinc-800 bg-zinc-950 py-3 pl-10 pr-4 text-sm text-zinc-200 placeholder-zinc-600 transition-colors focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+          className="retro-input w-full py-3 pl-10 pr-4 text-sm"
           aria-label="Buscar jogo por nome ou colar link da Steam"
           aria-expanded={showDropdown}
           aria-autocomplete="list"
@@ -310,7 +310,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
         {showDropdown && (
           <div
             ref={dropdownRef}
-            className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl shadow-black/40 animate-scale-in"
+            className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden pixel-card border-2 border-retro-border animate-float-up"
             role="listbox"
           >
             {searchStatus === "empty" && (
@@ -340,14 +340,14 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
                       aria-selected={isSelected}
                       onClick={() => addGameByAppId(result.appId)}
                       disabled={isAdding}
-                      className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors ${
+                      className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors ${
                         isSelected
-                          ? "bg-indigo-600/20 text-white"
-                          : "text-zinc-300 hover:bg-zinc-800"
+                          ? "bg-retro-primary/20 text-retro-text"
+                          : "text-retro-text-dim hover:bg-retro-surface-hover"
                       } ${isAdding ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       {/* Capa pequena */}
-                      <div className="shrink-0 h-10 w-[46px] overflow-hidden rounded-md bg-zinc-800">
+                      <div className="shrink-0 h-10 w-[46px] overflow-hidden bg-retro-surface pixel-border-sm">
                         {result.imageUrl ? (
                           <img
                             src={result.imageUrl}
@@ -364,15 +364,15 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
 
                       {/* Informações */}
                       <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-medium leading-tight">
+                        <p className="truncate font-pixel text-[8px] leading-tight text-retro-text">
                           {result.name}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-zinc-500">
+                        <p className="mt-0.5 font-pixel text-[7px] text-retro-text-dim">
                           {result.releaseYear && (
                             <span className="mr-2">{result.releaseYear}</span>
                           )}
                           {result.price && (
-                            <span className={result.price === "Grátis" ? "text-emerald-400" : ""}>
+                            <span className={result.price === "Grátis" ? "text-retro-green" : "text-retro-text-dim"}>
                               {result.price}
                             </span>
                           )}
@@ -380,13 +380,13 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
                       </div>
 
                       {/* App ID */}
-                      <span className="shrink-0 text-[10px] text-zinc-600 font-mono">
+                      <span className="shrink-0 font-pixel text-[6px] text-retro-text-dim">
                         #{result.appId}
                       </span>
 
                       {/* Spinner de adicionando */}
                       {isAdding && (
-                        <svg className="h-4 w-4 animate-spin text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="none">
+                        <svg className="h-4 w-4 animate-spin text-retro-primary shrink-0" viewBox="0 0 24 24" fill="none">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
@@ -396,10 +396,10 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
                 })}
 
                 {/* Footer do dropdown */}
-                <div className="border-t border-zinc-800 px-3 py-1.5 text-[11px] text-zinc-600 text-center">
+                <div className="border-t-2 border-retro-border px-3 py-1.5 font-pixel text-[6px] text-retro-text-dim text-center">
                   {searchResults.length >= 8
-                    ? "Mostrando até 8 resultados. Seja mais específico."
-                    : `${searchResults.length} resultado${searchResults.length !== 1 ? "s" : ""}`}
+                    ? "▼ MOSTRANDO ATÉ 8 RESULTADOS. SEJA MAIS ESPECÍFICO. ▼"
+                    : `▸ ${searchResults.length} RESULTADO${searchResults.length !== 1 ? "S" : ""} ◂`}
                 </div>
               </>
             )}
@@ -409,11 +409,11 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
         {/* Indicador de link detectado */}
         {extractedAppId && (
           <div className="absolute -bottom-5 left-0 flex items-center gap-1">
-            <span className="inline-block rounded bg-indigo-600/20 px-1.5 py-0.5 text-[10px] font-medium text-indigo-400">
-              Link detectado
+            <span className="pixel-badge bg-retro-primary/20 text-retro-primary pixel-border-sm">
+              LINK DETECTADO
             </span>
-            <span className="text-[10px] text-zinc-600">
-              Pressione Enter para adicionar
+            <span className="font-pixel text-[7px] text-retro-text-dim">
+              PRESSIONE ENTER PARA ADICIONAR
             </span>
           </div>
         )}
@@ -423,7 +423,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
       <button
         type="submit"
         disabled={loading || !inputValue.trim()}
-        className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white shadow-sm shadow-indigo-600/25 transition-all hover:bg-indigo-500 hover:shadow-md hover:shadow-indigo-600/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        className="pixel-btn flex items-center justify-center gap-2 bg-retro-primary px-5 py-3 text-[9px] text-white disabled:opacity-40 sm:w-auto"
       >
         {loading ? (
           <>

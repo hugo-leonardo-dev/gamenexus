@@ -62,7 +62,7 @@ export function ClientMemberManager({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 animate-float-up" style={{animationDelay: '0.2s'}}>
       {members.map((member) => {
         const isCurrentUser = member.userId === currentUserId;
         const isOwnerMember = member.role === "OWNER";
@@ -74,12 +74,12 @@ export function ClientMemberManager({
         return (
           <div
             key={member.id}
-            className={`rounded-xl border p-4 transition-all ${
+            className={`pixel-card p-4 transition-all ${
               isRemoving
-                ? "border-red-800/50 bg-red-950/10 opacity-50"
+                ? "opacity-50 border-l-2 border-l-retro-red"
                 : isOwnerMember
-                  ? "border-indigo-800/50 bg-indigo-950/10"
-                  : "border-zinc-800 bg-zinc-900/50"
+                  ? "border-l-2 border-l-retro-accent"
+                  : ""
             }`}
           >
             <div className="flex items-center gap-3">
@@ -88,10 +88,11 @@ export function ClientMemberManager({
                 <img
                   src={member.user.avatarUrl}
                   alt=""
-                  className="h-10 w-10 rounded-full"
+                  className="h-10 w-10 pixel-border-sm"
+                  style={{imageRendering: 'pixelated', borderRadius: 0}}
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-700 text-sm font-medium text-zinc-400">
+                <div className="flex h-10 w-10 items-center justify-center bg-retro-border font-pixel text-sm text-retro-text-dim pixel-border-sm">
                   {member.user.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -99,30 +100,28 @@ export function ClientMemberManager({
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-zinc-200 truncate">
+                  <span className="font-pixel text-[9px] text-retro-text truncate">
                     {member.user.name}
                     {isCurrentUser && (
-                      <span className="ml-1.5 text-xs text-zinc-500">(você)</span>
+                      <span className="ml-1.5 font-pixel text-[7px] text-retro-text-dim">(VOCÊ)</span>
                     )}
                   </span>
                   {isOwnerMember && (
-                    <span className="shrink-0 rounded-md bg-indigo-600/20 px-2 py-0.5 text-[11px] font-medium text-indigo-400">
-                      Dono
+                    <span className="pixel-badge bg-retro-accent/20 text-retro-accent pixel-border-sm">
+                      ★ DONO
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs text-zinc-500 truncate">
+                <p className="mt-0.5 font-pixel text-[7px] text-retro-text-dim truncate">
                   {member.user.email ?? member.user.discordId ? (
                     <>
                       {member.user.email && <span>{member.user.email}</span>}
                       {member.user.discordId && (
-                        <span className="ml-2">
-                          Discord: {member.user.discordId}
-                        </span>
+                        <span className="ml-2">DISCORD: {member.user.discordId}</span>
                       )}
                     </>
                   ) : (
-                    "Sem informações de contato"
+                    "SEM INFORMAÇÕES DE CONTATO"
                   )}
                 </p>
               </div>
@@ -132,9 +131,9 @@ export function ClientMemberManager({
                 <button
                   onClick={() => setConfirmId(member.id)}
                   disabled={isRemoving}
-                  className="shrink-0 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-all hover:border-red-700 hover:bg-red-950/20 hover:text-red-400"
+                  className="pixel-btn bg-retro-surface px-3 py-1.5 text-[7px] text-retro-text-dim border-2 border-retro-border hover:border-retro-red hover:text-retro-red"
                 >
-                  {isRemoving ? "Removendo..." : "Remover"}
+                  {isRemoving ? "REMOVENDO..." : "REMOVER"}
                 </button>
               )}
 
@@ -142,28 +141,28 @@ export function ClientMemberManager({
                 <div className="flex shrink-0 items-center gap-2">
                   <button
                     onClick={() => setConfirmId(null)}
-                    className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                    className="pixel-btn bg-retro-surface px-3 py-1.5 text-[7px] text-retro-text-dim border-2 border-retro-border"
                   >
-                    Cancelar
+                    CANCELAR
                   </button>
                   <button
                     onClick={() => handleRemove(member)}
-                    className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-500"
+                    className="pixel-btn bg-retro-red px-3 py-1.5 text-[7px] text-white"
                   >
-                    Confirmar
+                    CONFIRMAR
                   </button>
                 </div>
               )}
 
               {isCurrentUser && (
-                <span className="shrink-0 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs text-zinc-500">
-                  Você
+                <span className="pixel-badge bg-retro-surface text-retro-text-dim pixel-border-sm">
+                  VOCÊ
                 </span>
               )}
 
               {isOwnerMember && !isCurrentUser && (
-                <span className="shrink-0 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs text-zinc-500">
-                  Membro
+                <span className="pixel-badge bg-retro-surface text-retro-text-dim pixel-border-sm">
+                  MEMBRO
                 </span>
               )}
             </div>
@@ -173,8 +172,8 @@ export function ClientMemberManager({
 
       {/* Empty state */}
       {members.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-800 p-12 text-center">
-          <p className="text-sm text-zinc-500">Nenhum membro encontrado.</p>
+        <div className="pixel-card p-10 text-center">
+          <p className="font-pixel text-[9px] text-retro-text-dim">NENHUM MEMBRO ENCONTRADO.</p>
         </div>
       )}
     </div>

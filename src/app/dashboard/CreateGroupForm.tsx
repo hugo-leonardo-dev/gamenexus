@@ -46,9 +46,9 @@ export function CreateGroupForm() {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-      <h3 className="mb-3 text-sm font-semibold text-zinc-200">
-        Criar Novo Grupo
+    <div className="pixel-card p-4">
+      <h3 className="font-pixel text-[9px] text-retro-primary mb-3 uppercase tracking-wider">
+        ★ Criar Novo Grupo
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
@@ -61,14 +61,14 @@ export function CreateGroupForm() {
           }}
           placeholder="Nome do grupo"
           maxLength={VALIDATIONS.groupName.max}
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-500 transition-colors focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+          className="retro-input w-full px-3 py-2 text-sm"
           aria-label="Nome do novo grupo"
           autoComplete="off"
         />
         <button
           type="submit"
           disabled={loading || !name.trim()}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          className="pixel-btn flex w-full items-center justify-center gap-2 bg-retro-primary px-4 py-2.5 text-[9px] text-white disabled:opacity-40"
         >
           {loading ? (
             <svg

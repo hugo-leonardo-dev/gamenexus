@@ -130,8 +130,7 @@ export async function searchSteamGames(query: string): Promise<SteamSearchResult
 
   const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query.trim())}&cc=br&l=pt-BR`;
 
-  const response = await fetch(url, {
-    headers: { "User-Agent": "BacklogApp/1.0 (busca de jogos)" },
+  const response = await fetch(url, {      headers: { "User-Agent": "GameNexusApp/1.0 (busca de jogos)" },
   });
 
   if (!response.ok) {
@@ -166,7 +165,7 @@ async function fetchSteamReviews(appId: string): Promise<{ score: number | null;
   try {
     const url = `https://store.steampowered.com/appreviews/${appId}?json=1&filter=summary&language=all&num_per_page=0`;
     const response = await fetch(url, {
-      headers: { "User-Agent": "BacklogApp/1.0" },
+      headers: { "User-Agent": "GameNexusApp/1.0" },
       signal: AbortSignal.timeout(8000),
     });
 
@@ -198,7 +197,7 @@ export async function fetchCurrentPlayers(appId: string): Promise<number | null>
   try {
     const url = `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}`;
     const response = await fetch(url, {
-      headers: { "User-Agent": "BacklogApp/1.0" },
+      headers: { "User-Agent": "GameNexusApp/1.0" },
       signal: AbortSignal.timeout(5000),
     });
 
@@ -233,7 +232,7 @@ export async function fetchSteamGameData(
   const [detailsResponse, reviewsData, playersCount] = await Promise.all([
     fetch(
       `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=br&l=portuguese`,
-      { headers: { "User-Agent": "BacklogApp/1.0 (grupo colaborativo de backlog de jogos)" } }
+      { headers: { "User-Agent": "GameNexusApp/1.0 (grupo colaborativo de jogos)" } }
     ),
     fetchSteamReviews(appId),
     fetchCurrentPlayers(appId),

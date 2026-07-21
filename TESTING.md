@@ -1,4 +1,4 @@
-# 🧪 Checklist de Testes Manuais — Backlog de Jogos
+# 🧪 Checklist de Testes Manuais — GameNexus
 
 > Use este checklist para validar manualmente todas as funcionalidades do sistema antes de um deploy ou após mudanças significativas.
 
@@ -69,7 +69,7 @@
 ### 3.1 Adicionar Jogo
 
 - [ ] Na página do grupo, colar link da Steam no input e clicar "Adicionar"
-- [ ] Toast de sucesso: `"Título" adicionado ao backlog!`
+- [ ] Toast de sucesso: `"Título" adicionado ao GameNexus!`
 - [ ] O jogo aparece na coluna "Quero Jogar"
 - [ ] Tentar adicionar o mesmo jogo novamente → mensagem "Este jogo já foi adicionado"
 - [ ] Tentar adicionar link inválido (não Steam) → mensagem de erro
@@ -154,7 +154,7 @@
 
 ### 6.1 Navegação
 
-- [ ] Navbar mostra logo "Backlog" que leva à home
+- [ ] Navbar mostra logo "GameNexus" que leva à home
 - [ ] Navbar mostra "Dashboard" quando logado
 - [ ] Navbar mostra avatar e nome do usuário
 - [ ] Navbar mostra botão "Sair"
