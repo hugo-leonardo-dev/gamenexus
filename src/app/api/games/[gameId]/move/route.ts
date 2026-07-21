@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, apiSuccess, apiError, handleApiError } from "@/lib/api-utils";
 import { VALID_STATUSES } from "@/lib/types";
@@ -49,7 +50,7 @@ export async function PATCH(
     }
 
     // Usa transação para evitar race conditions
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (game.status !== status) {
         // Mudou de coluna: remove da posição antiga
         await tx.game.updateMany({
