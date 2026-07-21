@@ -12,13 +12,13 @@ function createPrismaClient() {
     throw new Error(
       "DATABASE_URL não definida. Configure a variável de ambiente DATABASE_URL " +
       "com a URL de conexão do PostgreSQL.\n" +
-      "Exemplo: DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require"
+      "Exemplo: DATABASE_URL=postgresql://user:password@host:6543/database?pgbouncer=true"
     );
   }
 
   const pool = new Pool({
     connectionString,
-    // Supabase exige SSL, necessário tanto para porta direta quanto pooler
+    // Supabase Transaction Pooler exige SSL
     ssl: connectionString.includes("supabase")
       ? { rejectUnauthorized: false }
       : false,
