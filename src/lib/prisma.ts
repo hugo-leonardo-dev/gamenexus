@@ -15,7 +15,13 @@ function createPrismaClient() {
       "Exemplo: DATABASE_URL=postgresql://user:password@host:5432/database"
     );
   }
-  const pool = new Pool({ connectionString });
+  const pool = new Pool({
+    connectionString,
+    // Supabase (pooler, porta 6543) exige SSL
+    ssl: connectionString.includes("supabase")
+      ? { rejectUnauthorized: false }
+      : false,
+  });
   const adapter = new PrismaPg(pool);
 
   return new PrismaClient({

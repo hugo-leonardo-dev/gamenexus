@@ -124,11 +124,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, account, profile }) {
       // Na primeira autenticação, associa o ID do banco ao token
       if (account && profile?.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { discordId: profile.id as string },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { discordId: profile.id as string },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+          }
+        } catch (err) {
+          console.error("[auth] Erro ao buscar usuário no JWT callback:", err);
         }
       }
 
