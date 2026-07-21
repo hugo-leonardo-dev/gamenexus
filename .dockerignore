@@ -1,0 +1,47 @@
+# ─── Dependências ────────────────────────────────────────────────────────
+node_modules
+.next
+
+# ─── Git ─────────────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ─── Ambiente ────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.example
+
+# ─── Documentação ────────────────────────────────────────────────────────
+*.md
+README.md
+SECURITY.md
+DEPLOY-ORACLE.md
+TESTING.md
+AGENTS.md
+todos.md
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# ─── Sistema ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+
+# ─── Prisma ──────────────────────────────────────────────────────────────
+# O schema e migrations SÃO necessários no build para o target 'migrate'.
+# prisma/migrations é essencial para 'prisma migrate deploy'.
+# NADA em prisma/ deve ser excluído.
+
+# ─── Next.js ─────────────────────────────────────────────────────────────
+# O .next do host não deve ser copiado para o build
+.next
+
+# ─── Outros ──────────────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts

@@ -7,7 +7,14 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL!;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error(
+      "DATABASE_URL não definida. Configure a variável de ambiente DATABASE_URL " +
+      "com a URL de conexão do PostgreSQL.\n" +
+      "Exemplo: DATABASE_URL=postgresql://user:password@host:5432/database"
+    );
+  }
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
 

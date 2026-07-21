@@ -1,0 +1,245 @@
+# ============================================================================
+# deploy.yml — GameNexus GitHub Actions
+# ============================================================================
+# Deploy automático ao fazer push na branch main.
+#
+# Fluxo:
+#   Push na main → GitHub Actions → SSH Oracle VM → git pull
+#     → docker compose build → docker compose up -d
+#     → healthcheck → Slack notify (opcional)
+#
+# Secrets necessárias (configurar no GitHub: Settings → Secrets → Actions):
+#
+#   🔴 OBRIGATÓRIAS:
+#   SSH_HOST          — IP público da VM Oracle (reservado, não efêmero)
+#   SSH_USER          — usuário SSH (ex: "ubuntu")
+#   SSH_PRIVATE_KEY   — chave privada SSH (sem senha, gerar com ssh-keygen)
+#
+#   🟡 RECOMENDADAS:
+#   SSH_PORT          — porta SSH (default: 22)
+#   SSH_KNOWN_HOSTS   — fingerprint do host (gera com: ssh-keyscan <IP>)
+#
+#   🔵 OPCIONAL:
+#   TEAMS_WEBHOOK_URL — webhook do Teams para notificação
+#   SLACK_WEBHOOK_URL — webhook do Slack para notificação
+#   DISCORD_WEBHOOK_URL — webhook do Discord para notificação
+#
+# ─── Preparação na VM ────────────────────────────────────────────────────
+# Antes de configurar o GitHub Actions, garanta que:
+#
+#   1. O repositório já foi clonado em /opt/gamenexus
+#   2. O arquivo .env existe em /opt/gamenexus/.env
+#   3. O usuário SSH tem permissão para executar docker sem sudo
+#      (sudo usermod -aG docker $USER)
+#   4. Execute ./scripts/deploy.sh manualmente ao menos uma vez
+#
+# ─── Gerar SSH Key para CI ──────────────────────────────────────────────
+#   ssh-keygen -t ed25519 -f ~/.ssh/gamenexus-ci -N ""
+#   ssh-copy-id -i ~/.ssh/gamenexus-ci.pub ubuntu@<IP>
+#   cat ~/.ssh/gamenexus-ci              # ← esta é a SSH_PRIVATE_KEY
+#   ssh-keyscan -H <IP>                  # ← este é o SSH_KNOWN_HOSTS
+# ============================================================================
+
+name: Deploy to Oracle Cloud
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Permite execução manual pelo GitHub UI
+
+jobs:
+  deploy:
+    name: Deploy to Oracle Cloud
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # ─── Validação de secrets obrigatórias ──────────────────────────────
+    # Se faltar alguma secret crítica, o workflow falha rápido.
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+
+    steps:
+      # ─── Step 1: Validar secrets obrigatórias ────────────────────────
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ env.SSH_HOST }}" ]; then
+            echo "::error::Secret SSH_HOST não configurada"
+            echo "::error::Configure em: Settings → Secrets → Actions"
+            exit 1
+          fi
+          if [ -z "${{ env.SSH_USER }}" ]; then
+            echo "::error::Secret SSH_USER não configurada"
+            echo "::error::Configure em: Settings → Secrets → Actions"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::Secret SSH_PRIVATE_KEY não configurada"
+            echo "::error::Configure em: Settings → Secrets → Actions"
+            exit 1
+          fi
+          echo "✅ Secrets validadas: ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
+
+      # ─── Step 2: Configurar chave SSH ────────────────────────────────
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Conhece o host (previne prompt de confirmação na primeira conexão)
+          if [ -n "${{ secrets.SSH_KNOWN_HOSTS }}" ]; then
+            echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          else
+            # Fallback: adiciona host automaticamente (menos seguro)
+            ssh-keyscan -H -p ${SSH_PORT} ${SSH_HOST} >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+
+          echo "✅ SSH configurado"
+
+      # ─── Step 3: Executar deploy via SSH ─────────────────────────────
+      # Conecta na VM Oracle e executa o update.sh
+      # O script é idempotente — seguro executar múltiplas vezes.
+      - name: Deploy via SSH
+        run: |
+          echo "🚀 Iniciando deploy em ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
+          echo ""
+
+          ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} \
+            -o ConnectTimeout=10 \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            bash -s << 'DEPLOY_SCRIPT'
+            # ============================================================
+            # Script executado na VM Oracle via SSH
+            # ============================================================
+
+            set -euo pipefail
+
+            PROJECT_DIR="/opt/gamenexus"
+            cd "$PROJECT_DIR"
+
+            echo "  📂 Diretório: $(pwd)"
+
+            # ─── 1. Git Pull ───────────────────────────────────────────
+            echo ""
+            echo "  📥 Atualizando código..."
+            git fetch origin main
+            OLD_COMMIT=$(git rev-parse HEAD)
+            git checkout main
+            git pull origin main
+            NEW_COMMIT=$(git rev-parse HEAD)
+            COMMIT_COUNT=$(git rev-list --count "${OLD_COMMIT}..${NEW_COMMIT}" 2>/dev/null || echo "0")
+            echo "  ✅ Código atualizado (${COMMIT_COUNT} novo(s) commit(s))"
+            echo "  📝 $(git log --oneline -1)"
+
+            # ─── 2. Docker Compose Build ───────────────────────────────
+            echo ""
+            echo "  🔨 Buildando imagens..."
+            docker compose build --pull 2>&1 | tail -5
+            echo "  ✅ Build concluído"
+
+            # ─── 3. Prisma Migrate ─────────────────────────────────────
+            echo ""
+            echo "  🗃️  Executando migrations..."
+            docker compose run --rm migrate 2>&1
+            echo "  ✅ Migrations aplicadas"
+
+            # ─── 4. Docker Compose Up ─────────────────────────────────
+            echo ""
+            echo "  🐳 Atualizando containers..."
+            docker compose up -d --remove-orphans 2>&1
+            echo "  ✅ Containers atualizados"
+
+            # ─── 5. Healthcheck ────────────────────────────────────────
+            echo ""
+            echo "  ❤️ Verificando healthcheck..."
+            MAX_RETRIES=30
+            RETRY_COUNT=0
+            HEALTHY=false
+
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+                HEALTH_STATUS=$(curl -sf http://localhost:3000/api/health 2>/dev/null)
+                HEALTHY=true
+                echo "  ✅ App saudável: ${HEALTH_STATUS}"
+                break
+              fi
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              sleep 2
+            done
+
+            if [ "$HEALTHY" = false ]; then
+              echo "  ⚠️  Timeout no healthcheck. Verifique os logs:"
+              echo "     docker compose logs app --tail=30"
+              exit 1
+            fi
+
+            # ─── 6. Limpeza de imagens antigas ─────────────────────────
+            echo ""
+            echo "  🧹 Limpando imagens não utilizadas..."
+            docker system prune -f 2>/dev/null || true
+            echo "  ✅ Limpeza concluída"
+
+            # ─── Resumo Final ──────────────────────────────────────────
+            echo ""
+            echo "  📊 Status dos containers:"
+            docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || true
+            echo ""
+            echo "  📦 Versão: $(git log --oneline -1)"
+
+          DEPLOY_SCRIPT
+
+          echo ""
+          echo "✅ Deploy concluído com sucesso!"
+
+      # ─── Step 4: Notificação (opcional) ─────────────────────────────
+      # Descomente o webhook que quiser usar e configure a secret.
+      #
+      # Teams:
+      #   - name: Notify Teams
+      #     if: always()
+      #     uses: aliencube/microsoft-teams-actions@v0.8
+      #     with:
+      #       webhook_uri: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      #       title: GameNexus Deploy
+      #       summary: Deploy ${{ job.status }}
+      #       text: >
+      #         Branch: main | Status: ${{ job.status }}
+      #         | Commit: ${{ github.sha }}
+      #
+      # Slack:
+      #   - name: Notify Slack
+      #     if: always()
+      #     uses: rtCamp/action-slack-notify@v2
+      #     env:
+      #       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #       SLACK_TITLE: GameNexus Deploy
+      #       SLACK_MESSAGE: "Status: ${{ job.status }}"
+      #
+      # Discord:
+      #   - name: Notify Discord
+      #     if: always()
+      #     uses: Ilshidur/action-discord@master
+      #     env:
+      #       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  # ─── Healthcheck pós-deploy ───────────────────────────────────────────
+  # Aguarda 60s e verifica novamente para garantir estabilidade.
+  # Usa o mesmo SSH configurado no job deploy (mesmo runner).
+  - name: Post-deploy verification
+    run: |
+      echo "🕐 Aguardando 60s para estabilização..."
+      sleep 60
+
+      echo "❤️ Verificando healthcheck remoto..."
+      ssh -p ${SSH_PORT} -o StrictHostKeyChecking=accept-new \
+        ${SSH_USER}@${SSH_HOST} \
+        "curl -sf http://localhost:3000/api/health" || {
+        echo "::warning::Healthcheck pós-deploy falhou"
+        echo "::warning::Verifique manualmente: ssh ${SSH_USER}@${SSH_HOST} 'docker compose logs app --tail=50'"
+        exit 1
+      }
+
+      echo "✅ Aplicação funcionando 1 minuto após deploy!"

@@ -1,7 +1,3 @@
-<grammar>
-Goal = Create a comprehensive README.md for the GameNexus project.
-</grammar>
-
 # 🎮 GameNexus
 
 Aplicação web colaborativa para grupos de amigos gerenciarem seus jogos. Adicione jogos da Steam, organize em Kanban (Quero Jogar / Jogando / Finalizados / Dropados) e acompanhe promoções.
@@ -231,17 +227,48 @@ src/
 
 ---
 
+## 📖 Documentação Técnica
+
+Toda a documentação técnica, auditorias e planos estão organizados na pasta `docs/`:
+
+```
+docs/
+├── README.md                        ← Índice central
+├── 01-security-audit.md             ← Auditoria de segurança
+├── 02-authentication-audit.md       ← Auditoria NextAuth/Auth.js
+├── 03-redis-audit.md                ← Auditoria de uso do Redis
+├── 04-prisma-audit.md               ← Auditoria de configuração Prisma
+├── 05-env-variables.md              ← Auditoria de variáveis de ambiente
+├── 06-deploy-oracle.md              ← Plano de deploy Oracle Cloud
+└── 07-testing-checklist.md          ← Checklist de testes manuais
+```
+
+As auditorias cobrem análise de segurança, authentication flow, configuração de infraestrutura (Redis, Prisma), variáveis de ambiente, deploy em nuvem e QA manual.
+
+---
+
 ## 🌐 Deploy
 
-O projeto está configurado para deploy na **Vercel** (arquivo `vercel.json` incluso).
+### Vercel (Cloud)
 
-### Passos para deploy
+O projeto está configurado para deploy na **Vercel** (arquivo `vercel.json` incluso).
 
 1. Conecte seu repositório GitHub à [Vercel](https://vercel.com)
 2. Configure as variáveis de ambiente no painel da Vercel
 3. Configure o banco PostgreSQL (recomendado: [Neon](https://neon.tech) ou [Supabase](https://supabase.com))
 4. Configure o Discord OAuth com a URL de produção como redirect
 5. Deploy automático a cada push na branch `main`
+
+### Docker / Oracle Cloud (Self-hosted)
+
+O projeto inclui infraestrutura Docker completa para deploy em VM própria:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+Veja o guia completo em [`docs/06-deploy-oracle.md`](docs/06-deploy-oracle.md).
 
 ---
 

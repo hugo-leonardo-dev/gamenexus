@@ -1,0 +1,220 @@
+# ============================================================================
+# docker-compose.yml — GameNexus
+# ============================================================================
+# Infraestrutura completa para produção na Oracle Cloud Always Free.
+#
+# Serviços:
+#   nginx     → Nginx (proxy reverso, SSL, cache, segurança)
+#   app       → Next.js 16 (standalone output, interno rede Docker)
+#   postgres  → PostgreSQL 16 (dados)
+#   redis     → Redis 7 (cache Steam API + rate limiting)
+#   migrate   → One-shot: executa prisma migrate deploy
+#
+# Uso:
+#   docker compose up -d                    # Inicia todos os serviços
+#   docker compose logs -f                  # Acompanha logs
+#   docker compose down                     # Para tudo
+#
+# Requer um arquivo .env na mesma pasta com as variáveis:
+#   DATABASE_URL, POSTGRES_PASSWORD, AUTH_SECRET, AUTH_DISCORD_ID,
+#   AUTH_DISCORD_SECRET, NEXTAUTH_URL, CRON_SECRET
+# ============================================================================
+
+name: gamenexus
+
+services:
+  # ─── Nginx: Proxy Reverso + SSL + Cache ────────────────────────────
+  # Entry point da aplicação para o mundo externo.
+  # - Proxy reverso para app:3000
+  # - SSL com Let's Encrypt
+  # - Headers de segurança (CSP, HSTS, etc.)
+  # - Gzip compression
+  # - Cache de assets estáticos
+  # - Rate limiting
+  nginx:
+    image: nginx:alpine
+    container_name: gamenexus-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Configuração ativa (HTTP-only para primeiro deploy)
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Configuração SSL (montada para swap via docker compose cp)
+      - ./nginx/nginx.ssl.conf:/etc/nginx/nginx.ssl.conf:ro
+      # Parâmetros de proxy compartilhados
+      - ./nginx/proxy-params.conf:/etc/nginx/proxy-params.conf:ro
+      # Certificados SSL (Let's Encrypt)
+      - certbot-conf:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+      # DH Params (para Perfect Forward Secrecy)
+      - certbot-dhparam:/etc/nginx
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gamenexus-net
+
+  # ─── App: Next.js (interno, sem porta exposta) ─────────────────────
+  # Acessível apenas pelo Nginx via rede interna Docker.
+  # Porta 3000 não é exposta externamente.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gamenexus-app
+    restart: unless-stopped
+    # Porta exposta apenas internamente na rede Docker
+    expose:
+      - "3000"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+
+      # NextAuth
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_DISCORD_ID=${AUTH_DISCORD_ID}
+      - AUTH_DISCORD_SECRET=${AUTH_DISCORD_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+
+      # Cron
+      - CRON_SECRET=${CRON_SECRET}
+
+      # Runtime
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+
+      # Redis (opcional — configurado mas app pode cair para in-memory)
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - gamenexus-net
+
+  # ─── PostgreSQL: Dados ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: gamenexus-postgres
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: gamenexus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: gamenexus
+    # Configurações otimizadas para 1GB RAM (Oracle Cloud Free Tier)
+    # shared_buffers=128MB é mais seguro que 256MB para 1GB total.
+    # Estimativa de RAM: OS ~200MB + PostgreSQL ~250MB + Next.js ~250MB
+    # + Nginx ~20MB + Redis ~50MB = ~770MB (margem segura de ~230MB)
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "maintenance_work_mem=64MB"
+      - "-c"
+      - "effective_cache_size=512MB"
+      - "-c"
+      - "max_connections=20"
+      - "-c"
+      - "wal_level=minimal"
+      - "-c"
+      - "fsync=on"
+      - "-c"
+      - "full_page_writes=on"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gamenexus -d gamenexus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - gamenexus-net
+
+  # ─── Redis: Cache + Rate Limiting ───────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: gamenexus-redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    # Configurações para ambiente com pouca RAM
+    command:
+      - "redis-server"
+      - "--save"
+      - "3600"
+      - "1"
+      - "--save"
+      - "300"
+      - "100"
+      - "--maxmemory"
+      - "64mb"
+      - "--maxmemory-policy"
+      - "allkeys-lru"
+      - "--appendonly"
+      - "no"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gamenexus-net
+
+  # ─── Migrate: Prisma Migrate (startup essencial) ───────────────────
+  # Roda automaticamente antes do app em todo deploy.
+  # Se não houver novas migrations, executa em segundos e termina.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    container_name: gamenexus-migrate
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gamenexus-net
+
+# ─── Volumes ──────────────────────────────────────────────────────────
+volumes:
+  pgdata:
+    name: gamenexus-pgdata
+  redisdata:
+    name: gamenexus-redisdata
+  certbot-conf:
+    name: gamenexus-certbot-conf
+  certbot-www:
+    name: gamenexus-certbot-www
+  certbot-dhparam:
+    name: gamenexus-certbot-dhparam
+
+# ─── Networks ─────────────────────────────────────────────────────────
+networks:
+  gamenexus-net:
+    name: gamenexus-net
+    driver: bridge
