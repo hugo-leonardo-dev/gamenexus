@@ -132,7 +132,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.id = dbUser.id;
           }
         } catch (err) {
-          console.error("[auth] Erro ao buscar usuário no JWT callback:", err);
+          console.error("[auth] JWT: findUnique falhou:", err);
+          // Se o DB estiver offline, o token.id fica undefined.
+          // O dashboard está protegido por getGroupsSafe() e mostrará
+          // uma mensagem amigável em vez de crashar.
         }
       }
 

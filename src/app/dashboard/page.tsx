@@ -10,6 +10,16 @@ export const metadata: Metadata = {
   title: "Dashboard",
 };
 
+async function getGroupsSafe(): Promise<{ groups: Awaited<ReturnType<typeof listUserGroups>>; error: string | null }> {
+  try {
+    const groups = await listUserGroups();
+    return { groups, error: null };
+  } catch (error) {
+    console.error("[dashboard] Erro ao carregar grupos:", error);
+    return { groups: [], error: "Não foi possível carregar seus grupos. Tente recarregar a página." };
+  }
+}
+
 export default async function DashboardPage() {
   const session = await auth();
 
@@ -17,7 +27,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const groups = await listUserGroups();
+  const { groups, error: groupsError } = await getGroupsSafe();
 
   return (
     <div className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
@@ -46,14 +56,37 @@ export default async function DashboardPage() {
           <h2 className="font-pixel text-[10px] text-retro-text uppercase tracking-wider">
             Seus Grupos
           </h2>
-          {groups.length > 0 && (
+          {groups.length > 0 && !groupsError && (
             <span className="pixel-badge bg-retro-surface text-retro-text-dim pixel-border-sm">
               {groups.length}
             </span>
           )}
         </div>
 
-        {groups.length === 0 ? (
+        {/* Banner de erro */}
+        {groupsError && (
+          <div className="mb-6 rounded-lg border-2 border-retro-red/30 bg-retro-red/10 p-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <svg className="h-5 w-5 text-retro-red shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              <p className="font-pixel text-[9px] text-retro-red">
+                ERRO AO CARREGAR GRUPOS
+              </p>
+            </div>
+            <p className="font-pixel text-[7px] text-retro-text-dim mb-3">{groupsError}</p>
+            <form action="/dashboard" method="GET">
+              <button
+                type="submit"
+                className="pixel-btn bg-retro-surface px-4 py-2 text-[7px] text-retro-text hover:text-retro-primary border-2 border-retro-border"
+              >
+                ↻ RECARREGAR
+              </button>
+            </form>
+          </div>
+        )}
+
+        {groups.length === 0 && !groupsError ? (
           <div className="pixel-card p-10 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center pixel-border-sm" style={{background: 'linear-gradient(135deg, #1a1a30, #0d0d1a)'}}>
               <svg
@@ -77,7 +110,7 @@ export default async function DashboardPage() {
               Crie seu primeiro grupo acima ou peça um código de convite para seus amigos!
             </p>
           </div>
-        ) : (
+        ) : groups.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map((group, index) => (
               <Link
@@ -116,15 +149,17 @@ export default async function DashboardPage() {
               </Link>
             ))}
           </div>
-        )}
+        ) : null}
       </section>
 
       {/* Footer decoration */}
-      <div className="mt-12 border-t-2 border-retro-border pt-4 text-center">
-        <span className="font-pixel text-[6px] text-retro-text-dim">
-          ▸ {groups.length} GRUPO{groups.length !== 1 ? "S" : ""} CADASTRADO{groups.length !== 1 ? "S" : ""} ◂
-        </span>
-      </div>
+      {!groupsError && (
+        <div className="mt-12 border-t-2 border-retro-border pt-4 text-center">
+          <span className="font-pixel text-[6px] text-retro-text-dim">
+            ▸ {groups.length} GRUPO{groups.length !== 1 ? "S" : ""} CADASTRADO{groups.length !== 1 ? "S" : ""} ◂
+          </span>
+        </div>
+      )}
     </div>
   );
 }
