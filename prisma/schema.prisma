@@ -1,0 +1,118 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Usuário ───────────────────────────────────────────────────────────────
+model User {
+  id            String    @id @default(cuid())
+  discordId     String?   @unique
+  name          String
+  email         String?   @unique
+  emailVerified DateTime?
+  avatarUrl     String?
+  passwordHash  String?
+
+  memberships GroupMember[]
+  gamesAdded  Game[]
+  accounts    Account[]
+  sessions    Session[]
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Grupos ────────────────────────────────────────────────────────────────
+model Group {
+  id         String       @id @default(cuid())
+  name       String
+  inviteCode String       @unique
+  members    GroupMember[]
+  games      Game[]
+  createdAt  DateTime      @default(now())
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  role      String   @default("MEMBER") // OWNER | MEMBER
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, groupId])
+}
+
+// ─── Jogos ─────────────────────────────────────────────────────────────────
+model Game {
+  id              String   @id @default(cuid())
+  groupId         String
+  addedById       String
+  steamAppId      String
+  title           String
+  imageUrl        String
+  releaseDate     DateTime?
+  isReleased      Boolean  @default(false)
+
+  // Preços em centavos (BRL)
+  originalPrice   Int?
+  currentPrice    Int?
+  discountPercent Int      @default(0)
+
+  status          String   @default("BACKLOG") // BACKLOG | PLAYING | COMPLETED
+  position        Int      @default(0)
+
+  // Reviews (buscado da Steam)
+  reviewScore     Int?     // Percentual positivo (ex: 94)
+  reviewSummary   String?  // Texto resumido (ex: "Overwhelmingly Positive")
+
+  // Jogadores simultâneos
+  currentPlayers  Int?     // Jogando agora
+  peak24h         Int?     // Pico nas últimas 24h
+
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  addedBy   User  @relation(fields: [addedById], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, steamAppId])
+}
+
+// ─── NextAuth (Auth.js) ────────────────────────────────────────────────────
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
