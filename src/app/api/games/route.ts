@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { extractSteamAppId, fetchSteamGameData } from "@/lib/steam";
-import { requireAuth, requireMembership, apiError, apiSuccess, handleApiError } from "@/lib/api-utils";
+import { requireAuth, requireMembership, apiError, apiSuccess, handleApiError, type ApiErrorCode } from "@/lib/api-utils";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  let userId: string | undefined;
   try {
-    const userId = await requireAuth();
+    userId = await requireAuth();
 
     const body = await request.json();
     const { steamUrl, groupId } = body;
@@ -95,6 +96,6 @@ export async function POST(request: Request) {
     if (error.message?.includes("Limite de consultas")) {
       return apiError(error.message, "RATE_LIMITED");
     }
-    return handleApiError(error, "api/games POST");
+    return handleApiError(error, "api/games POST", userId);
   }
 }

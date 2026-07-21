@@ -1,45 +1,76 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
-/**
- * GET /api/health
- *
- * Endpoint de healthcheck utilizado pelo Docker e monitoramento.
- * Retorna o status da aplicação e da conexão com o banco de dados.
- *
- * Uso:
- *   curl http://localhost:3000/api/health
- *   curl https://gamenexus.com/api/health
- */
+interface HealthResponse {
+  status: "healthy" | "unhealthy";
+  timestamp: string;
+  uptime: number;
+  database: {
+    status: "connected" | "disconnected" | "error";
+    error?: {
+      code: string;
+      message: string;
+    };
+    latencyMs: number | null;
+  };
+  version: string;
+}
+
 export async function GET() {
   const start = Date.now();
+  const response: HealthResponse = {
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: {
+      status: "connected",
+      latencyMs: null,
+    },
+    version: "0.1.0",
+  };
 
   try {
-    // Verifica se o banco de dados está acessível
     await prisma.$queryRaw`SELECT 1`;
+    response.database.latencyMs = Date.now() - start;
+    response.database.status = "connected";
+  } catch (error: any) {
+    response.status = "unhealthy";
+    response.database.status = "disconnected";
+    response.database.latencyMs = Date.now() - start;
 
-    return NextResponse.json(
-      {
-        status: "healthy",
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        database: "connected",
-        responseTimeMs: Date.now() - start,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("[healthcheck] Database connection failed:", error);
+    // Log estruturado
+    logger.error("Healthcheck: banco inacessível", {
+      source: "api/health",
+      route: "GET /api/health",
+      data: { latencyMs: response.database.latencyMs },
+    }, error);
 
-    return NextResponse.json(
-      {
-        status: "unhealthy",
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        database: "disconnected",
-        responseTimeMs: Date.now() - start,
-      },
-      { status: 503 }
-    );
+    // Mensagem segura para o cliente (sem stack)
+    const errorCode = error?.code as string | undefined;
+    if (errorCode) {
+      response.database.error = {
+        code: errorCode,
+        message: getSafeErrorMessage(errorCode),
+      };
+    }
+
+    return NextResponse.json(response, { status: 503 });
   }
+
+  logger.info("Healthcheck: OK", {
+    source: "api/health",
+    data: { latencyMs: response.database.latencyMs },
+  });
+
+  return NextResponse.json(response, { status: 200 });
+}
+
+function getSafeErrorMessage(code: string): string {
+  const messages: Record<string, string> = {
+    P1001: "Banco de dados inacessível",
+    P1002: "Timeout na conexão",
+    P1017: "Servidor fechou a conexão",
+  };
+  return messages[code] ?? "Erro de conexão com o banco de dados";
 }

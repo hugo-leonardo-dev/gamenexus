@@ -7,8 +7,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ gameId: string }> }
 ) {
+  let userId: string | undefined;
   try {
-    const userId = await requireAuth();
+    userId = await requireAuth();
     const { gameId } = await params;
 
     const body = await request.json();
@@ -103,6 +104,6 @@ export async function PATCH(
 
     return apiSuccess({ ok: true });
   } catch (error: any) {
-    return handleApiError(error, "api/games/[gameId]/move PATCH");
+    return handleApiError(error, "api/games/[gameId]/move PATCH", userId);
   }
 }

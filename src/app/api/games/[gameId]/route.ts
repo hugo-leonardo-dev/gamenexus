@@ -6,8 +6,9 @@ interface RouteParams {
 }
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
+  let userId: string | undefined;
   try {
-    const userId = await requireAuth();
+    userId = await requireAuth();
     const { gameId } = await params;
 
     // Busca o jogo para verificar o grupo
@@ -40,6 +41,6 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
 
     return apiSuccess({ success: true });
   } catch (error) {
-    return handleApiError(error, "api/games/[gameId] DELETE");
+    return handleApiError(error, "api/games/[gameId] DELETE", userId);
   }
 }
