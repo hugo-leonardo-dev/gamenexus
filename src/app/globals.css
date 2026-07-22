@@ -448,6 +448,42 @@ body {
   animation: drag-pulse 0.5s ease-in-out 3;
 }
 
+/* ─── High-DPI scale (1440p+) ────────────────────────────────────────── */
+/* Escala a fonte pixel em telas grandes para melhor legibilidade */
+
+@media (min-width: 1920px) {
+  .font-pixel.text-\[7px\] {
+    font-size: 8.5px;
+  }
+  .font-pixel.text-\[8px\] {
+    font-size: 9.5px;
+  }
+  .font-pixel.text-\[9px\] {
+    font-size: 11px;
+  }
+  .font-pixel.text-\[10px\] {
+    font-size: 12px;
+  }
+  .font-pixel.text-\[11px\] {
+    font-size: 13px;
+  }
+  .font-pixel.text-sm {
+    font-size: 15px;
+  }
+  .font-pixel.text-base {
+    font-size: 17px;
+  }
+  .font-pixel.text-lg {
+    font-size: 19px;
+  }
+  .font-pixel.text-xl {
+    font-size: 22px;
+  }
+  .font-pixel.text-2xl {
+    font-size: 26px;
+  }
+}
+
 /* ─── Scrollbar customizada (retro) ───────────────────────────────────── */
 
 .scrollbar-thin {

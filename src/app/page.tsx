@@ -612,7 +612,7 @@ export default async function HomePage() {
                 Info
               </h4>
               <ul className="space-y-2 font-pixel text-[7px] text-retro-text-dim">
-                <li>GameNexus v1.0</li>
+                <li>GameNexus v1.1</li>
                 <li>© 2026 GameNexus</li>
                 <li>Feito com ❤️ para jogadores</li>
                 <li>

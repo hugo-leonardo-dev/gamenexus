@@ -3,7 +3,7 @@ import { Press_Start_2P, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/ui/SessionProvider";
 import { ToastProvider } from "@/components/ui/ToastProvider";
-import { Navbar } from "@/components/layout/Navbar";
+import { AppShell } from "@/components/layout/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,10 +51,9 @@ export default function RootLayout({
             <div className="fixed inset-0 pointer-events-none z-[9998] crt-glow opacity-20" />
             {/* Vignette */}
             <div className="fixed inset-0 pointer-events-none z-[9997] vignette-overlay" />
-            <Navbar />
-            <main className="flex min-h-[calc(100vh-4rem)] flex-col">
+            <AppShell>
               {children}
-            </main>
+            </AppShell>
           </ToastProvider>
         </SessionProvider>
       </body>

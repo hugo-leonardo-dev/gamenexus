@@ -111,10 +111,10 @@ export function SortableGameCard({ game, groupId, onMoveStatus, isMoving, expand
         }
       />
 
-      {/* Modal de confirmação */}
+      {/* Modal de confirmação - posicionado na viewport */}
       {showConfirm && (
         <div
-          className="absolute inset-0 z-30 flex items-center justify-center rounded-xl bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -122,25 +122,25 @@ export function SortableGameCard({ game, groupId, onMoveStatus, isMoving, expand
           }}
         >
           <div
-            className="mx-4 w-full max-w-[260px] pixel-card p-4"
+            className="mx-4 w-full max-w-[300px] rounded-xl border border-retro-border/30 bg-retro-card-bg/90 backdrop-blur-sm p-5 shadow-xl"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
             }}
           >
-            <p className="mb-3 text-center font-pixel text-[9px] text-retro-text">
-              REMOVER <span className="text-retro-primary">{game.title}</span>?
+            <p className="mb-5 text-center font-pixel text-[10px] text-retro-text leading-relaxed">
+              Remover <span className="text-retro-primary">{game.title}</span>?
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   setShowConfirm(false);
                 }}
-                className="pixel-btn flex-1 bg-retro-surface px-3 py-2 text-[8px] text-retro-text border-2 border-retro-border"
+                className="flex-1 rounded-lg border border-retro-border/30 px-4 py-2.5 font-pixel text-[8px] text-retro-text-dim transition-all hover:bg-retro-surface-hover active:scale-[0.97]"
               >
-                CANCELAR
+                Cancelar
               </button>
               <button
                 onClick={(e) => {
@@ -148,9 +148,9 @@ export function SortableGameCard({ game, groupId, onMoveStatus, isMoving, expand
                   e.preventDefault();
                   handleDelete();
                 }}
-                className="pixel-btn flex-1 bg-retro-red px-3 py-2 text-[8px] text-white"
+                className="flex-1 rounded-lg bg-retro-red px-4 py-2.5 font-pixel text-[8px] text-white transition-all hover:bg-retro-red/90 active:scale-[0.97]"
               >
-                REMOVER
+                Remover
               </button>
             </div>
           </div>

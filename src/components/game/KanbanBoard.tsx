@@ -94,19 +94,18 @@ function EmptyColumnDropZone({ status }: { status: string }) {
     data: { type: "column", status },
   });
 
-  return (
-    <div
-      ref={setNodeRef}
-      className={`flex flex-1 items-center justify-center border-2 py-8 transition-all duration-200 ${
-        isOver
-          ? "border-retro-primary bg-retro-primary/5 pixel-border-accent"
-          : "border-dashed border-retro-border"
-      }`}
-    >
-      <p className="font-pixel text-[7px] text-retro-text-dim">
-        {isOver ? "▼ SOLTE AQUI ▼" : "▸ ARRASTE JOGOS PARA CÁ ◂"}
-      </p>
-    </div>
+  return (          <div
+              ref={setNodeRef}
+              className={`flex flex-1 items-center justify-center rounded-lg py-8 transition-all duration-200 ${
+                isOver
+                  ? "bg-retro-primary/10 ring-2 ring-retro-primary"
+                  : "border-2 border-dashed border-retro-border/40"
+              }`}
+            >
+              <p className="font-pixel text-[7px] text-retro-text-dim">
+                {isOver ? "SOLTE AQUI" : "Arraste jogos para cá"}
+              </p>
+            </div>
   );
 }
 
@@ -316,7 +315,7 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
       {/* Search + Sort + Status */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Search */}
-        <div className="relative w-full sm:max-w-xs">
+        <div className="relative w-full sm:max-w-sm md:max-w-md">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
             <svg className="h-4 w-4 text-retro-text-dim" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -386,24 +385,24 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
           {gamesByColumn.map((column) => (
             <div
               key={column.key}
-              className={`flex flex-col crt-screen border-t-2 ${column.borderColor} lg:flex-1 lg:min-h-0`}
+              className={`flex flex-col rounded-xl border border-retro-border/30 bg-retro-bg/50 backdrop-blur-sm lg:flex-1 lg:min-h-0 overflow-hidden`}
             >
               {/* Header da Coluna */}
               <div
-                className={`flex items-center gap-2 px-4 py-3 ${column.headerBg} border-b-2 border-retro-border`}
+                className={`flex items-center gap-2.5 px-4 py-3 border-b border-retro-border/20 ${column.headerBg}`}
               >
-                <span className={`h-2.5 w-2.5 ${column.dotColor}`} />
+                <span className={`h-2.5 w-2.5 rounded-full ${column.dotColor} shadow-sm`} style={{boxShadow: `0 0 6px var(--color-${column.key === 'BACKLOG' ? 'retro-text-dim' : column.key === 'PLAYING' ? 'retro-green' : column.key === 'PAUSED' ? 'retro-amber' : column.key === 'COMPLETED' ? 'retro-cyan' : 'retro-red'})`}} />
                 <h3 className="font-pixel text-[9px] text-retro-text uppercase tracking-wider">
                   {column.title}
                 </h3>
-                <span className="ml-auto pixel-badge bg-retro-surface text-retro-text-dim pixel-border-sm">
+                <span className="ml-auto inline-flex items-center justify-center rounded-md bg-retro-surface/80 px-2 py-0.5 font-pixel text-[7px] text-retro-text-dim">
                   {column.games.length}
                 </span>
               </div>
 
               {/* Lista */}
-              <div className="flex flex-1 flex-col gap-3 p-2">
-                <div className="flex-1 space-y-2 overflow-y-auto max-h-[60vh] lg:max-h-[calc(100vh-400px)] scrollbar-thin">
+              <div className="flex flex-1 flex-col gap-2 p-3 lg:p-4">
+                <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[60vh] lg:max-h-[calc(100vh-400px)] scrollbar-thin pr-1.5">
                   {hasFilter && column.games.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <p className="text-xs text-zinc-600">
@@ -439,7 +438,7 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
 
           <DragOverlay>
             {draggedGame ? (
-              <div className="rotate-3 scale-105 opacity-90 shadow-2xl">
+              <div className="rotate-2 scale-105 opacity-90 shadow-2xl shadow-retro-primary/10">
                 <GameCard game={draggedGame} />
               </div>
             ) : null}
@@ -447,10 +446,10 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
         </DndContext>
       </div>
 
-      {/* Retro footer decoration */}
-      <div className="border-t-2 border-retro-border pt-3 text-center">
-        <span className="font-pixel text-[6px] text-retro-text-dim">
-          ▸ {totalGames} JOGO{totalGames !== 1 ? "S" : ""} NO GAMENEXUS ◂
+      {/* Footer com contagem */}
+      <div className="border-t border-retro-border/20 pt-3 text-center">
+        <span className="font-pixel text-[6px] text-retro-text-dim/60">
+          {totalGames} JOGO{totalGames !== 1 ? "S" : ""}
         </span>
       </div>
     </div>

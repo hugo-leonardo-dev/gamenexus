@@ -98,7 +98,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
   ).length;
 
   return (
-    <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1400px] flex-1 px-6 py-8 sm:px-8 lg:px-10 xl:px-12">
       {/* Header do Grupo */}
       <div className="mb-6 pixel-card p-5 sm:p-6 animate-float-up">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
