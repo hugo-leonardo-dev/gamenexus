@@ -260,6 +260,13 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
   // Auto-scroll durante drag
   useAutoScroll(draggedGame !== null);
 
+  // ─── Estado de expansão (apenas um card expandido por vez) ──
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const handleToggleExpand = useCallback((gameId: string) => {
+    setExpandedId((prev) => (prev === gameId ? null : gameId));
+  }, []);
+
   // ─── Mover via menu (sem drag) ────────────────────────────────
 
   const [movingId, setMovingId] = useState<string | null>(null);
@@ -419,6 +426,8 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                           groupId={groupId}
                           onMoveStatus={(status) => handleMoveStatus(game.id, status)}
                           isMoving={movingId === game.id}
+                          expandedId={expandedId}
+                          onToggleExpand={handleToggleExpand}
                         />
                       ))}
                     </SortableContext>
