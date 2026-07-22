@@ -115,7 +115,7 @@ function parseSteamSearchPrice(price: SteamSearchPrice | undefined): string | nu
 }
 
 export async function searchSteamGames(query: string): Promise<SteamSearchResult[]> {
-  if (!query || query.trim().length < 2) return [];
+  if (!query || query.trim().length < 3) return [];
 
   const cacheKey = `steam:search:${query.trim().toLowerCase()}`;
   const cached = cacheGet<SteamSearchResult[]>(cacheKey);
