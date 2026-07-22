@@ -20,7 +20,7 @@ export async function PATCH(
     }
 
     if (!VALID_STATUSES.includes(status)) {
-      return apiError("Status inválido. Use: BACKLOG, PLAYING, COMPLETED ou DROPPED.", "VALIDATION_ERROR");
+      return apiError("Status inválido. Use: BACKLOG, PLAYING, PAUSED, COMPLETED ou DROPPED.", "VALIDATION_ERROR");
     }
 
     if (typeof position !== "number" || position < 0) {

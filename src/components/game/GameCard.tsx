@@ -27,6 +27,7 @@ function formatPlayerCount(n: number): string {
 const STATUS_CFG: Record<string, { label: string; dot: string }> = {
   BACKLOG:   { label: "QUERO JOGAR", dot: "bg-zinc-500" },
   PLAYING:   { label: "JOGANDO",     dot: "bg-retro-green" },
+  PAUSED:    { label: "PAUSADO",     dot: "bg-retro-amber" },
   COMPLETED: { label: "FEITO",       dot: "bg-retro-cyan" },
   DROPPED:   { label: "DROPADO",     dot: "bg-retro-red" },
 };

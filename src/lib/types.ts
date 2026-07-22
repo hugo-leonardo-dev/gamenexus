@@ -1,11 +1,12 @@
 // ─── Jogos ───────────────────────────────────────────────────────────────
-export type GameStatus = "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED";
+export type GameStatus = "BACKLOG" | "PLAYING" | "PAUSED" | "COMPLETED" | "DROPPED";
 
-export const VALID_STATUSES: GameStatus[] = ["BACKLOG", "PLAYING", "COMPLETED", "DROPPED"];
+export const VALID_STATUSES: GameStatus[] = ["BACKLOG", "PLAYING", "PAUSED", "COMPLETED", "DROPPED"];
 
 export const STATUS_LABELS: Record<GameStatus, string> = {
   BACKLOG: "Quero Jogar",
   PLAYING: "Jogando Agora",
+  PAUSED: "Pausados",
   COMPLETED: "Finalizados",
   DROPPED: "Dropados",
 };
@@ -13,6 +14,7 @@ export const STATUS_LABELS: Record<GameStatus, string> = {
 export const STATUS_COLORS: Record<GameStatus, string> = {
   BACKLOG: "bg-zinc-800 text-zinc-300",
   PLAYING: "bg-emerald-600/20 text-emerald-400",
+  PAUSED: "bg-amber-600/20 text-amber-400",
   COMPLETED: "bg-blue-600/20 text-blue-400",
   DROPPED: "bg-red-600/20 text-red-400",
 };
@@ -87,6 +89,13 @@ export const KANBAN_COLUMNS = [
     borderColor: "border-t-emerald-600",
     headerBg: "bg-emerald-900/20",
     dotColor: "bg-emerald-500",
+  },
+  {
+    key: "PAUSED" as GameStatus,
+    title: "Pausados",
+    borderColor: "border-t-amber-600",
+    headerBg: "bg-amber-900/20",
+    dotColor: "bg-amber-500",
   },
   {
     key: "COMPLETED" as GameStatus,

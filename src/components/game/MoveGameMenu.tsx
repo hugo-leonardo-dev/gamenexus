@@ -179,6 +179,7 @@ export function MoveGameMenu({
 const STATUS_ICONS = {
   BACKLOG: "🎮",
   PLAYING: "▶",
+  PAUSED: "⏸️",
   COMPLETED: "✅",
   DROPPED: "❌",
 };

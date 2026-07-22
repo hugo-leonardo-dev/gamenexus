@@ -89,6 +89,7 @@ export function SortableGameCard({ game, groupId, onMoveStatus, isMoving, expand
       aria-label={`${game.title} - ${
   game.status === "BACKLOG" ? "Quero Jogar" :
   game.status === "PLAYING" ? "Jogando Agora" :
+  game.status === "PAUSED" ? "Pausado" :
   game.status === "COMPLETED" ? "Finalizado" :
   "Dropado"
 }`}
