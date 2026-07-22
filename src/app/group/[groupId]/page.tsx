@@ -5,7 +5,7 @@ import { KanbanBoard } from "@/components/game/KanbanBoard";
 import { AddGameForm } from "@/components/group/AddGameForm";
 import { CopyInviteButton } from "./CopyInviteButton";
 import { MemberList } from "@/components/group/MemberList";
-import { DeleteGroupButton } from "@/components/group/DeleteGroupButton";
+import { ManageGroupButton } from "@/components/group/ManageGroupButton";
 import type { Metadata } from "next";
 
 interface GroupPageProps {
@@ -122,37 +122,22 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
           </div>
 
           <div className="flex items-center gap-2">
-            {isOwner && (
-              <DeleteGroupButton
-                groupId={groupId}
-                groupName={group.name}
-                otherMembersCount={otherMembersCount}
-                isOwner={isOwner}
-              />
-            )}
             <CopyInviteButton inviteCode={group.inviteCode} />
+            <ManageGroupButton
+              groupId={groupId}
+              groupName={group.name}
+              members={group.members}
+              currentUserId={session.user.id ?? ""}
+              isOwner={isOwner}
+              otherMembersCount={otherMembersCount}
+            />
           </div>
         </div>
 
         <MemberList
           members={group.members}
-          groupId={groupId}
           currentUserId={session.user.id ?? ""}
-          isOwner={isOwner}
         />
-
-        {/* Link para página de membros */}
-        <div className="mt-3 flex justify-end border-t border-retro-border pt-3">
-          <a
-            href={`/group/${groupId}/members`}
-            className="pixel-btn flex items-center gap-1.5 bg-retro-surface px-3 py-1.5 text-[7px] text-retro-text-dim hover:text-retro-primary"
-          >
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-            </svg>
-            GERENCIAR MEMBROS
-          </a>
-        </div>
       </div>
 
       {/* Input para adicionar jogo */}

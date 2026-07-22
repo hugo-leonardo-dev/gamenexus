@@ -33,7 +33,7 @@ export function DeleteGroupButton({
     <>
       <button
         onClick={() => setDialogOpen(true)}
-        className="pixel-btn flex items-center gap-1.5 bg-retro-surface px-3 py-1.5 text-[7px] text-retro-red/70 border-2 border-retro-border transition-all hover:border-retro-red hover:text-retro-red hover:bg-retro-red/5"
+        className="pixel-btn flex items-center gap-1.5 bg-retro-surface px-3 py-1.5 text-[7px] text-retro-red border-2 border-retro-border transition-all hover:bg-retro-red hover:text-white hover:border-retro-red"
         title="Excluir grupo permanentemente"
       >
         <svg
