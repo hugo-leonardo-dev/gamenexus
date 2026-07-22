@@ -121,9 +121,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return true;
     },
-    async jwt({ token, account, profile }) {
-      // Na primeira autenticação (só acontece uma vez):
-      // Guarda o discordId no token para uso futuro e já tenta buscar o usuário
+    async jwt({ token, account, profile, trigger }) {
+      // ─── Primeira autenticação ──────────────────────────────
       if (account && profile?.id) {
         token.discordId = profile.id as string;
 
@@ -133,23 +132,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
           if (dbUser) {
             token.id = dbUser.id;
+            token.name = dbUser.name;
+            token.picture = dbUser.avatarUrl;
           }
         } catch (err) {
           console.error("[auth] JWT: findUnique falhou:", err);
         }
       }
 
-      // Em chamadas subsequentes: se ainda não temos o token.id,
-      // tenta novamente usando o discordId salvo no token.
-      // Isso permite recuperar de falhas temporárias de conexão.
+      // ─── Update do perfil (via updateSession()) ─────────────
+      if (trigger === "update" && token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { name: true, avatarUrl: true },
+          });
+          if (dbUser) {
+            token.name = dbUser.name;
+            token.picture = dbUser.avatarUrl;
+          }
+        } catch (err) {
+          console.error("[auth] JWT: update refresh falhou:", err);
+        }
+      }
+
+      // ─── Recuperação de token.id perdido ───────────────────
       if (!token.id && token.discordId) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { discordId: token.discordId as string },
-            select: { id: true },
+            select: { id: true, name: true, avatarUrl: true },
           });
           if (dbUser) {
             token.id = dbUser.id;
+            token.name = dbUser.name;
+            token.picture = dbUser.avatarUrl;
           }
         } catch (err) {
           console.error("[auth] JWT: findUnique subsequente falhou:", err);
@@ -166,6 +183,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string | null;
       }
       return session;
     },
