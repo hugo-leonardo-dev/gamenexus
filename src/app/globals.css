@@ -18,7 +18,7 @@
   --color-retro-purple: #8b5cf6;
   --color-retro-cyan: #00e5ff;
   --color-retro-text: #d0d0f0;
-  --color-retro-text-dim: #6a6a90;
+  --color-retro-text-dim: #9898c0;
   --color-retro-text-bright: #ffffff;
   --color-retro-card-bg: #12122a;
 
@@ -203,7 +203,6 @@ body {
 
 .retro-input::placeholder {
   color: var(--color-retro-text-dim);
-  opacity: 0.6;
 }
 
 /* ─── Badge Pixel ─────────────────────────────────────────────────────── */
