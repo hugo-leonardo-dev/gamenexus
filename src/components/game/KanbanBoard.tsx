@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
   PointerSensor,
   TouchSensor,
   useSensor,
-  useSensors,
   useDroppable,
   type DragStartEvent,
   type DragEndEvent,
@@ -17,10 +16,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useToast } from "@/components/ui/ToastProvider";
 import { useGameRefresh } from "@/lib/use-game-refresh";
+import { useMoveGame } from "@/hooks/useMoveGame";
 import { SortableGameCard } from "./SortableGameCard";
 import { GameCard } from "./GameCard";
-import { KANBAN_COLUMNS, type GameCardData } from "@/lib/types";
+import { KANBAN_COLUMNS, type GameCardData, type GameStatus } from "@/lib/types";
 
 interface KanbanBoardProps {
   games: GameCardData[];
@@ -39,7 +40,51 @@ const SORT_OPTIONS = [
   { value: "price_asc",    label: "Preço (menor → maior)" },
 ] as const;
 
-type SortOption = (typeof SORT_OPTIONS)[number]["value"];
+// ─── Auto-scroll helper ──────────────────────────────────────────────
+
+const AUTO_SCROLL_ZONE = 60;   // px da borda
+const AUTO_SCROLL_SPEED = 8;   // px por frame
+
+function useAutoScroll(dragging: boolean) {
+  const scrollRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!dragging) {
+      if (scrollRef.current !== null) {
+        cancelAnimationFrame(scrollRef.current);
+        scrollRef.current = null;
+      }
+      return;
+    }
+
+    function tick() {
+      const y = window.scrollY;
+      const h = window.innerHeight;
+      const activeEl = document.elementFromPoint(window.innerWidth / 2, h / 2);
+
+      if (activeEl) {
+        const rect = activeEl.getBoundingClientRect();
+        const distTop = rect.top;
+        const distBottom = h - rect.bottom;
+
+        if (distTop < AUTO_SCROLL_ZONE && distTop > 0) {
+          const speed = Math.max(2, (AUTO_SCROLL_ZONE - distTop) / AUTO_SCROLL_ZONE * AUTO_SCROLL_SPEED);
+          window.scrollBy(0, -speed);
+        } else if (distBottom < AUTO_SCROLL_ZONE && distBottom > 0) {
+          const speed = Math.max(2, (AUTO_SCROLL_ZONE - distBottom) / AUTO_SCROLL_ZONE * AUTO_SCROLL_SPEED);
+          window.scrollBy(0, speed);
+        }
+      }
+
+      scrollRef.current = requestAnimationFrame(tick);
+    }
+
+    scrollRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (scrollRef.current !== null) cancelAnimationFrame(scrollRef.current);
+    };
+  }, [dragging]);
+}
 
 // ─── Drop zone para coluna vazia ─────────────────────────────────────
 
@@ -70,11 +115,25 @@ function EmptyColumnDropZone({ status }: { status: string }) {
 export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { moveGame, isRefreshing } = useGameRefresh();
+  const { addToast } = useToast();
+  const { isRefreshing } = useGameRefresh();
+  const { moveGame } = useMoveGame();
   const [draggedGame, setDraggedGame] = useState<GameCardData | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Atualiza a URL com o novo sort, forçando o servidor a re-renderizar com a ordenação correta
+  // Estado local para optimistic updates: inicia com os games do servidor
+  const [localGames, setLocalGames] = useState<GameCardData[]>(games);
+  const prevGamesRef = useRef<GameCardData[]>(games);
+
+  // Sincroniza quando o servidor envia novos dados (após refresh)
+  useEffect(() => {
+    if (games !== prevGamesRef.current) {
+      setLocalGames(games);
+      prevGamesRef.current = games;
+    }
+  }, [games]);
+
+  // Atualiza a URL com o novo sort
   const handleSortChange = useCallback(
     (value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -84,12 +143,12 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
     [router, searchParams]
   );
 
-  // Filtro por busca textual (client-side — dados já carregados)
+  // Filtro por busca textual
   const filteredGames = useMemo(() => {
-    if (!searchQuery.trim()) return games;
+    if (!searchQuery.trim()) return localGames;
     const q = searchQuery.trim().toLowerCase();
-    return games.filter((g) => g.title.toLowerCase().includes(q));
-  }, [games, searchQuery]);
+    return localGames.filter((g) => g.title.toLowerCase().includes(q));
+  }, [localGames, searchQuery]);
 
   // Separa os jogos por coluna
   const gamesByColumn = useMemo(
@@ -105,33 +164,55 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
     [filteredGames]
   );
 
-  // Sensores para desktop e mobile
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 200,
-        tolerance: 8,
-      },
-    })
-  );
+  // Sensores: cada um exclusivo para seu dispositivo
+  // - Desktop: PointerSensor com distance mínima (drag imediato ao clicar e mover)
+  // - Mobile:  TouchSensor com delay 450ms + tolerance 10px (long press para ativar)
+  // NUNCA usar ambos simultaneamente no mobile — PointerSensor com distance:5
+  // dispara antes do scroll, causando "salto" do card.
+  //
+  // Ambos hooks são chamados no topo (rules of hooks), mas apenas o sensor
+  // do dispositivo ativo é incluído no array.
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 450,
+      tolerance: 10,
+    },
+  });
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 5,
+    },
+  });
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const game = event.active.data.current?.game as GameCardData | undefined;
-    if (game) setDraggedGame(game);
-  }, []);
+  const isTouchDevice =
+    typeof window !== "undefined" &&
+    ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
+  const sensors = isTouchDevice ? [touchSensor] : [pointerSensor];
+
+  // ─── Drag handlers ─────────────────────────────────────────────
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const game = event.active.data.current?.game as GameCardData | undefined;
+      if (game) {
+        setDraggedGame(game);
+        // Feedback tátil (vibração) no mobile
+        if (navigator.vibrate) {
+          navigator.vibrate(15);
+        }
+      }
+    },
+    []
+  );
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
       const { active, over } = event;
+      const game = active.data.current?.game as GameCardData | undefined;
       setDraggedGame(null);
 
-      if (!over || !active) return;
-
-      const activeGame = active.data.current?.game as GameCardData | undefined;
-      if (!activeGame) return;
+      if (!over || !active || !game) return;
 
       const overData = over.data.current;
 
@@ -148,23 +229,78 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
         targetPosition = overGame.position;
       }
 
-      if (
-        activeGame.status === targetStatus &&
-        activeGame.position === targetPosition
-      ) {
+      if (game.status === targetStatus && game.position === targetPosition) {
         return;
       }
 
-      await moveGame(activeGame.id, {
+      // Snapshot para rollback
+      const snapshot = [...localGames];
+
+      // Aplica optimistic update imediatamente
+      setLocalGames((prev) =>
+        prev.map((g) =>
+          g.id === game.id
+            ? { ...g, status: targetStatus, position: targetPosition }
+            : g
+        )
+      );
+
+      // Chama API com rollback em caso de erro
+      await moveGame(game.id, {
         status: targetStatus,
         position: targetPosition,
         groupId,
+      }, {
+        onRollback: () => setLocalGames(snapshot),
       });
     },
-    [groupId, moveGame]
+    [groupId, localGames, moveGame]
   );
 
-  const totalGames = games.length;
+  // Auto-scroll durante drag
+  useAutoScroll(draggedGame !== null);
+
+  // ─── Mover via menu (sem drag) ────────────────────────────────
+
+  const [movingId, setMovingId] = useState<string | null>(null);
+
+  const handleMoveStatus = useCallback(
+    (gameId: string, newStatus: string) => {
+      const game = localGames.find((g) => g.id === gameId);
+      if (!game || game.status === newStatus) return;
+
+      setMovingId(gameId);
+
+      // Posição: final da lista da coluna destino
+      const targetColumnGames = localGames.filter((g) => g.status === newStatus);
+      const targetPosition = targetColumnGames.length;
+
+      // Snapshot para rollback
+      const snapshot = [...localGames];
+
+      // Aplica optimistic update
+      setLocalGames((prev) =>
+        prev.map((g) =>
+          g.id === gameId
+            ? { ...g, status: newStatus, position: targetPosition }
+            : g
+        )
+      );
+
+      moveGame(gameId, {
+        status: newStatus,
+        position: targetPosition,
+        groupId,
+      }, {
+        onRollback: () => setLocalGames(snapshot),
+      }).finally(() => setMovingId(null));
+    },
+    [localGames, groupId, moveGame]
+  );
+
+  // ─── Render ───────────────────────────────────────────────────
+
+  const totalGames = localGames.length;
   const filteredTotal = filteredGames.length;
   const hasFilter = searchQuery.trim().length > 0;
 
@@ -281,6 +417,8 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                           key={game.id}
                           game={game}
                           groupId={groupId}
+                          onMoveStatus={(status) => handleMoveStatus(game.id, status)}
+                          isMoving={movingId === game.id}
                         />
                       ))}
                     </SortableContext>

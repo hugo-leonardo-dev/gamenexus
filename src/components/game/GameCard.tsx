@@ -5,6 +5,8 @@ interface GameCardProps {
   game: GameCardData;
   onDelete?: () => void;
   deleting?: boolean;
+  /** Renderiza o botão e menu "Mover para..." */
+  moveMenu?: React.ReactNode;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -24,7 +26,7 @@ const STATUS_CFG: Record<string, { label: string; border: string; headerBg: stri
 
 // ─── Componente ─────────────────────────────────────────────────────────
 
-export function GameCard({ game, onDelete, deleting }: GameCardProps) {
+export function GameCard({ game, onDelete, deleting, moveMenu }: GameCardProps) {
   const isDiscounted = game.discountPercent > 0;
   const isFree = game.currentPrice === 0;
   const statusCfg = STATUS_CFG[game.status] ?? STATUS_CFG.BACKLOG;
@@ -54,7 +56,7 @@ export function GameCard({ game, onDelete, deleting }: GameCardProps) {
 
   return (
     <div
-      className={`group overflow-hidden transition-all duration-200 ${
+      className={`group transition-all duration-200 ${
         isDiscounted
           ? "pixel-card border-l-2 border-l-retro-green"
           : "pixel-card"
@@ -161,6 +163,9 @@ export function GameCard({ game, onDelete, deleting }: GameCardProps) {
         <span className="hidden sm:block font-pixel text-[6px] text-retro-text-dim max-w-[120px] truncate leading-none">
           @{game.addedBy.name}
         </span>
+
+        {/* Mover para (apenas mobile) */}
+        {moveMenu}
 
         {/* Botão lixeira */}
         {onDelete && (
