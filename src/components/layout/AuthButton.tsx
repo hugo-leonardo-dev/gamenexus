@@ -17,12 +17,22 @@ export function AuthButton() {
     return (
       <div className="relative flex items-center gap-3">
         <Link
+          href="/profile"
+          className="hidden font-pixel text-[9px] text-retro-text-dim transition-colors hover:text-retro-primary sm:block uppercase tracking-wider"
+        >
+          Perfil
+        </Link>
+        <Link
           href="/dashboard"
           className="hidden font-pixel text-[9px] text-retro-text-dim transition-colors hover:text-retro-primary sm:block uppercase tracking-wider"
         >
           Dashboard
         </Link>
-        <div className="flex items-center gap-2">
+        <Link
+          href="/profile"
+          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          title="Meu Perfil"
+        >
           {session.user.image && (
             <Image
               src={session.user.image}
@@ -36,7 +46,7 @@ export function AuthButton() {
           <span className="hidden text-sm font-medium text-retro-text md:block">
             {session.user.name}
           </span>
-        </div>
+        </Link>
         <button
           onClick={() => signOut()}
           className="pixel-btn bg-retro-red px-3 py-1.5 text-[9px] text-white"

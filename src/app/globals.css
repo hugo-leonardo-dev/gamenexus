@@ -18,7 +18,7 @@
   --color-retro-purple: #8b5cf6;
   --color-retro-cyan: #00e5ff;
   --color-retro-text: #d0d0f0;
-  --color-retro-text-dim: #6a6a90;
+  --color-retro-text-dim: #9898c0;
   --color-retro-text-bright: #ffffff;
   --color-retro-card-bg: #12122a;
 
@@ -203,7 +203,6 @@ body {
 
 .retro-input::placeholder {
   color: var(--color-retro-text-dim);
-  opacity: 0.6;
 }
 
 /* ─── Badge Pixel ─────────────────────────────────────────────────────── */
@@ -294,6 +293,195 @@ body {
 
 .animate-blink {
   animation: blink 1s step-end infinite;
+}
+
+/* ─── Grid Background ────────────────────────────────────── */
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(74, 124, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 124, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ─── Gradient Text ─────────────────────────────────────── */
+
+.text-gradient {
+  background: linear-gradient(135deg, #4a7cff 0%, #8b5cf6 50%, #00e5ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-accent {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb000 50%, #ff8c00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glass Card ─────────────────────────────────────────── */
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(26, 26, 48, 0.8), rgba(18, 18, 42, 0.9));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(74, 124, 255, 0.1);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-card:hover {
+  border-color: rgba(74, 124, 255, 0.25);
+  box-shadow:
+    0 8px 32px rgba(74, 124, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Kanban Mockup ─────────────────────────────────────── */
+
+.mockup-column {
+  background: rgba(13, 13, 26, 0.6);
+  border: 1px solid rgba(42, 42, 80, 0.5);
+  border-radius: 8px;
+}
+
+.mockup-card {
+  background: linear-gradient(135deg, rgba(26, 26, 48, 0.9), rgba(18, 18, 42, 0.95));
+  border: 1px solid rgba(42, 42, 80, 0.4);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.mockup-card:hover {
+  border-color: rgba(74, 124, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ─── Hero Glow ─────────────────────────────────────────── */
+
+.hero-glow {
+  position: relative;
+}
+
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(74, 124, 255, 0.08) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  animation: hero-glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes hero-glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* ─── Step Connector ─────────────────────────────────────── */
+
+.step-connector {
+  position: relative;
+}
+
+.step-connector::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1.5rem;
+  width: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(74, 124, 255, 0.4), transparent);
+}
+
+.step-connector:last-child::after {
+  display: none;
+}
+
+/* ─── Feature Icon Glow ─────────────────────────────────── */
+
+.feature-icon-glow {
+  position: relative;
+}
+
+.feature-icon-glow::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 12px;
+  background: radial-gradient(circle at center, rgba(74, 124, 255, 0.15), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feature-icon-glow:hover::after {
+  opacity: 1;
+}
+
+/* ─── Drag handle pulse (mobile onboarding) ──────────────── */
+
+@keyframes drag-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+.animate-drag-pulse {
+  animation: drag-pulse 0.5s ease-in-out 3;
+}
+
+/* ─── High-DPI scale (1440p+) ────────────────────────────────────────── */
+/* Escala a fonte pixel em telas grandes para melhor legibilidade */
+
+@media (min-width: 1920px) {
+  .font-pixel.text-\[7px\] {
+    font-size: 8.5px;
+  }
+  .font-pixel.text-\[8px\] {
+    font-size: 9.5px;
+  }
+  .font-pixel.text-\[9px\] {
+    font-size: 11px;
+  }
+  .font-pixel.text-\[10px\] {
+    font-size: 12px;
+  }
+  .font-pixel.text-\[11px\] {
+    font-size: 13px;
+  }
+  .font-pixel.text-sm {
+    font-size: 15px;
+  }
+  .font-pixel.text-base {
+    font-size: 17px;
+  }
+  .font-pixel.text-lg {
+    font-size: 19px;
+  }
+  .font-pixel.text-xl {
+    font-size: 22px;
+  }
+  .font-pixel.text-2xl {
+    font-size: 26px;
+  }
 }
 
 /* ─── Scrollbar customizada (retro) ───────────────────────────────────── */

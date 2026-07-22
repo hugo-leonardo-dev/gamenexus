@@ -44,8 +44,9 @@ name: Deploy to Oracle Cloud
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch: # Permite execução manual pelo GitHub UI
+    branches: [production]  # ⚠️ Desativado: mude para [main] quando quiser ativar
+  workflow_dispatch:
+    branches: [production]
 
 jobs:
   deploy:
