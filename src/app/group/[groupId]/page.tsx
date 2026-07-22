@@ -5,6 +5,7 @@ import { KanbanBoard } from "@/components/game/KanbanBoard";
 import { AddGameForm } from "@/components/group/AddGameForm";
 import { CopyInviteButton } from "./CopyInviteButton";
 import { MemberList } from "@/components/group/MemberList";
+import { DeleteGroupButton } from "@/components/group/DeleteGroupButton";
 import type { Metadata } from "next";
 
 interface GroupPageProps {
@@ -91,6 +92,11 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
 
   const isOwner = currentMember.role === "OWNER";
 
+  // Contagem de participantes excluindo o próprio usuário
+  const otherMembersCount = group.members.filter(
+    (m) => m.userId !== session.user?.id
+  ).length;
+
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
       {/* Header do Grupo */}
@@ -115,7 +121,17 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
             </p>
           </div>
 
-          <CopyInviteButton inviteCode={group.inviteCode} />
+          <div className="flex items-center gap-2">
+            {isOwner && (
+              <DeleteGroupButton
+                groupId={groupId}
+                groupName={group.name}
+                otherMembersCount={otherMembersCount}
+                isOwner={isOwner}
+              />
+            )}
+            <CopyInviteButton inviteCode={group.inviteCode} />
+          </div>
         </div>
 
         <MemberList

@@ -151,6 +151,63 @@ export async function removeMember(groupId: string, memberId: string) {
 }
 
 /**
+ * Exclui um grupo (apenas OWNER, grupo sem participantes e confirmação de nome).
+ */
+export async function deleteGroup(groupId: string, confirmedName: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new AuthError("UNAUTHORIZED");
+  }
+
+  // Verifica se o usuário é OWNER do grupo
+  const requester = await prisma.groupMember.findUnique({
+    where: {
+      userId_groupId: {
+        userId: session.user.id,
+        groupId,
+      },
+    },
+  });
+
+  if (!requester || requester.role !== "OWNER") {
+    throw new AuthError("FORBIDDEN");
+  }
+
+  // Busca o grupo
+  const group = await prisma.group.findUnique({
+    where: { id: groupId },
+  });
+
+  if (!group) {
+    throw new AuthError("NOT_FOUND");
+  }
+
+  // Verifica se existem participantes (excluindo o próprio usuário)
+  const otherMembersCount = await prisma.groupMember.count({
+    where: {
+      groupId,
+      userId: { not: session.user.id },
+    },
+  });
+
+  if (otherMembersCount > 0) {
+    throw new AuthError("CONFLICT", "GROUP_HAS_MEMBERS");
+  }
+
+  // Valida a confirmação do nome
+  if (confirmedName !== group.name) {
+    throw new AuthError("VALIDATION_ERROR", "NAME_MISMATCH");
+  }
+
+  // Exclui o grupo (em cascata deleta jogos, membros, etc.)
+  await prisma.group.delete({
+    where: { id: groupId },
+  });
+
+  return { deleted: groupId };
+}
+
+/**
  * Entra em um grupo usando o código de convite.
  */
 export async function joinGroup(inviteCode: string) {
