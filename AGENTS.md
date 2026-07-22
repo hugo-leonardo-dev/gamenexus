@@ -1,167 +1,630 @@
+````md
 # 🤖 Agents & System Design (agents.md)
 
-Este documento define a especificação técnica, o escopo de funcionalidades e o fluxo de agentes/serviços automáticos para o sistema **GameNexus**.
+Este documento define a arquitetura, os padrões de desenvolvimento, as responsabilidades dos agentes e o fluxo obrigatório de implementação do **GameNexus**.
+
+Nenhuma funcionalidade deve ser implementada ignorando este documento.
 
 ---
 
-## 1. Escopo do Produto
+# 1. Escopo do Produto
 
-Aplicação web colaborativa para grupos de amigos gerenciarem seus jogos.
+GameNexus é uma aplicação web colaborativa para gerenciamento de backlogs de jogos.
 
-### Funcionalidades principais
+O sistema possui dois conceitos principais:
 
-- **Autenticação:** Principalmente via **Discord OAuth**. Suporte secundário Email/Senha.
-- **Grupos:** Criação de grupos privados + convite via código único.
-- **Gestão de Backlog:**
-  - Adicionar jogo colando link da Steam.
-  - **Categorias/Tags**: Coop, Survival, FPS, RPG, Multiplayer, etc. (múltiplas por jogo).
-  - **Status de Lançamento**: Indicação se já foi lançado + data.
-  - Kanban com colunas: **Quero Jogar (Backlog)**, **Jogando Agora**, **Finalizados**.
-- **Colaboração:** Todo membro (MEMBER ou OWNER) pode adicionar, remover, editar tags, mover jogos entre colunas e atualizar informações.
-- **Preços Steam:** Atualização automática diária (manhã) via cron job.
-- **Visual:** Cards com capa, preço atual/original/desconto (em destaque), tags de categoria, quem adicionou.
+- Backlogs compartilhados por grupos
+- Backlog pessoal do usuário
+
+O backlog pessoal será futuramente reutilizado como Backlog Público, portanto toda implementação deve considerar essa evolução.
 
 ---
 
-## 2. Arquitetura de Dados (PostgreSQL + Prisma)
+# 2. Funcionalidades
 
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+## Autenticação
 
-generator client {
-  provider = "prisma-client-js"
-}
+- Discord OAuth (principal)
+- Email/Senha (secundário)
 
-model User {
-  id            String         @id @default(cuid())
-  discordId     String?        @unique // Principal identificador
-  name          String
-  email         String?        @unique
-  avatarUrl     String?
-  passwordHash  String?        // Opcional (fallback)
-  memberships   GroupMember[]
-  createdAt     DateTime       @default(now())
-}
+---
 
-model Group {
-  id          String         @id @default(cuid())
-  name        String
-  inviteCode  String         @unique
-  members     GroupMember[]
-  games       Game[]
-  createdAt   DateTime       @default(now())
-}
+## Grupos
 
-model GroupMember {
-  id        String   @id @default(cuid())
-  userId    String
-  groupId   String
-  role      String   @default("MEMBER") // OWNER, MEMBER
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+- Criar grupo
+- Entrar por convite
+- Renomear grupo
+- Excluir grupo
+- Gerenciar membros
 
-  @@unique([userId, groupId])
-}
+---
 
-model Game {
-  id              String   @id @default(cuid())
-  groupId         String
-  addedById       String
-  steamAppId      String   @unique([groupId, steamAppId]) // Evita duplicados no grupo
-  title           String
-  imageUrl        String
-  releaseDate     DateTime? // Data de lançamento (null = TBA)
-  isReleased      Boolean  @default(false)
+## Backlog de Grupo
 
-  // Preços em centavos (BRL)
-  originalPrice   Int?
-  currentPrice    Int?
-  discountPercent Int      @default(0)
+Cada grupo possui seu próprio Kanban.
 
-  status          String   @default("BACKLOG") // BACKLOG | PLAYING | COMPLETED
-  position        Int      @default(0)         // Para ordenação drag-and-drop dentro da coluna
+Categorias:
 
-  categories      String[] // Array de tags: ["Coop", "Survival", "FPS", ...]
+- 📚 Backlog
+- 🎮 Jogando
+- ⏸️ Pausados
+- ✅ Finalizados
+- ❌ Dropados
 
-  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  addedBy         User     @relation(fields: [addedById], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
+Todos os membros podem:
+
+- adicionar jogos
+- mover jogos
+- remover jogos
+- editar jogos
+
+---
+
+## Backlog Pessoal
+
+Cada usuário possui um backlog próprio.
+
+Esse backlog será utilizado futuramente para:
+
+- Perfil Público
+- Estatísticas
+- Recomendações
+- Feed
+- Compartilhamento
+- Favoritos
+
+Toda implementação deve reutilizar ao máximo os componentes do backlog de grupo.
+
+Nunca duplicar regras de negócio.
+
+---
+
+# 3. Arquitetura
+
+Sempre priorizar reutilização.
+
+Evitar criar componentes específicos quando eles puderem ser compartilhados.
+
+Exemplo:
 
 ```
+BacklogBoard
 
-## 3. Agentes e Serviços do Sistema
+BacklogColumn
 
-### 3.1. Agente de Autenticação (Discord OAuth)
+GameCard
 
-Use NextAuth.js (ou Auth.js) com Discord Provider.
-No callback: buscar discordId, nome e avatar.
-Criar ou vincular usuário existente.
+SteamSearch
 
-### 3.2. Agente de Scraping / Parser da Steam (POST /api/games)
+GameFilters
 
-Entrada: URL da Steam → extrai appId.
-Requisição:
-TypeScripthttps://store.steampowered.com/api/appdetails?appids={APP_ID}&cc=br&l=portuguese
+MoveGameMenu
 
-Dados extraídos:
+Kanban
 
-title, header_image (capa).
-release_date.date → releaseDate e isReleased.
-genres e categories (mapeie para suas tags amigáveis, ex: "Multi-player" → "Multiplayer").
-price_overview: initial, final, discount_percent.
-Se is_free: preços = 0.
+Dialog
 
-Validações e tratamento de erros (jogo não encontrado, região, etc.).
+Modal
 
-### 3.3. Agente de Sincronização de Preços (Cron Job)
+Dropdown
 
-Endpoint: GET /api/cron/update-prices
-Segurança: Header Authorization: Bearer ${CRON_SECRET}
-Agendamento: Vercel Cron (ou Railway, etc.) diariamente às 05:00 AM (horário de Brasília).
-Lógica:
-SELECT DISTINCT steamAppId FROM Game
-Agrupar em lotes de 10-15 IDs (Steam permite vírgula).
-Fetch em batch.
-Update em lote (prisma.game.updateMany(...)).
+ContextMenu
+```
 
-Atualiza apenas currentPrice, discountPercent e updatedAt.
+O objetivo é possuir apenas um sistema de Kanban capaz de funcionar para:
 
-## 4. Fluxo de Telas / User Stories
+- grupos
+- usuário
+- perfil público (futuro)
 
-Dashboard
+---
 
-Lista de grupos.
-Criar grupo (nome + gerar inviteCode).
-Entrar com código.
+# 4. Banco de Dados
 
-Painel do Grupo (/group/[id])
+Sempre que alterar o Prisma:
 
-Header: Nome, código de convite (botão copiar), membros.
-Filtros: Por categoria, por status de lançamento.
-Kanban (3 colunas):
-Drag & drop entre colunas + reordenação dentro da coluna (atualiza status e position).
+- pensar na escalabilidade
+- evitar duplicação
+- manter relacionamentos consistentes
+- manter índices
+- documentar alterações
 
-Adicionar jogo: Input grande para colar link Steam.
-Cada card:
-Capa
-Título
-Tags de categoria (chips clicáveis para filtro)
-Preço (com destaque verde se em promoção)
-"Adicionado por X"
-Botões: Mover, Editar tags, Remover (confirm)
+Nunca criar tabelas pensando apenas na necessidade imediata.
 
-Permissões: Todo MEMBER pode fazer tudo (add/remove/move/edit). OWNER pode gerenciar membros.
+Toda modelagem deve considerar futuras funcionalidades.
 
-## 5. Requisitos Técnicos Adicionais
+---
 
-Rate limiting no scraping (evitar ban da Steam).
-Cache de respostas Steam (Redis ou banco, TTL 1h para adição manual).
-Notificações (opcional futura): Quando um jogo em backlog entra em promoção forte.
-Mobile-friendly (Kanban responsivo).
-Logs e monitoramento do cron job.
+# 5. Agentes
+
+---
+
+## Architect
+
+Responsável por:
+
+- arquitetura
+- modelagem
+- organização
+- escalabilidade
+- separação de responsabilidades
+
+Antes de implementar qualquer funcionalidade deve verificar se existe uma solução mais reutilizável.
+
+---
+
+## Backend Agent
+
+Responsável por:
+
+- APIs
+- Prisma
+- Banco
+- Segurança
+- Performance
+- Cache
+
+Sempre validar:
+
+- autenticação
+- autorização
+- validação
+- tratamento de erros
+
+---
+
+## Frontend Agent
+
+Responsável por:
+
+- UX
+- UI
+- Responsividade
+- Performance
+- Acessibilidade
+
+Sempre reutilizar componentes existentes.
+
+Nunca duplicar interfaces.
+
+---
+
+## Steam Agent
+
+Responsável por:
+
+- parser Steam
+- scraping
+- atualização de preços
+- cache
+- rate limiting
+
+---
+
+## Cron Agent
+
+Responsável por:
+
+- sincronização diária
+- logs
+- retries
+- monitoramento
+
+---
+
+## Code Reviewer
+
+Responsável por:
+
+- qualidade do código
+- padrões
+- simplificação
+- legibilidade
+- arquitetura
+
+Deve procurar:
+
+- código duplicado
+- componentes duplicados
+- funções repetidas
+- lógica repetida
+
+---
+
+## QA Agent
+
+O QA Agent é obrigatório.
+
+Após qualquer implementação ele assume o projeto.
+
+Seu objetivo NÃO é implementar funcionalidades.
+
+Seu objetivo é quebrar o sistema.
+
+Ele deve procurar:
+
+- bugs
+- regressões
+- edge cases
+- race conditions
+- estados inválidos
+- problemas de UX
+- problemas de performance
+- memory leaks
+- loops
+- loading infinito
+- inconsistências
+- falhas de permissões
+- problemas mobile
+
+Nenhuma feature deve ser considerada pronta antes da aprovação do QA.
+
+---
+
+# 6. Processo Obrigatório de Desenvolvimento
+
+Toda implementação deve seguir obrigatoriamente este fluxo.
+
+```
+Planejamento
+
+↓
+
+Arquitetura
+
+↓
+
+Implementação
+
+↓
+
+Code Review
+
+↓
+
+Testes
+
+↓
+
+Correções
+
+↓
+
+Validação Final
+```
+
+Nunca pular etapas.
+
+---
+
+# 7. Regras Gerais
+
+Sempre:
+
+- reutilizar componentes
+- reutilizar APIs
+- reutilizar hooks
+- reutilizar serviços
+
+Evitar:
+
+- duplicação
+- gambiarra
+- código morto
+- lógica repetida
+
+Sempre explicar decisões arquiteturais importantes.
+
+---
+
+# 8. Tratamento de Erros
+
+Nunca utilizar mensagens genéricas.
+
+Exemplo ruim:
+
+```
+Erro interno.
+```
+
+Exemplo bom:
+
+```
+[Steam Search]
+
+Request:
+GET /api/steam/search
+
+Status:
+429
+
+Motivo:
+Steam retornou Too Many Requests.
+
+Query:
+elden ring
+
+Tempo:
+431ms
+
+Tentativas:
+3
+
+Resposta Steam:
+Too Many Requests
+
+Sugestão:
+Aguardar alguns segundos antes de tentar novamente.
+```
+
+Todos os erros devem registrar:
+
+- timestamp
+- endpoint
+- usuário
+- groupId
+- payload
+- status HTTP
+- stack trace
+- erro original
+- causa
+- contexto
+
+Logs devem facilitar o debug.
+
+Nunca esconder exceções.
+
+---
+
+# 9. APIs
+
+Toda API criada deve possuir testes para:
+
+200
+
+201
+
+400
+
+401
+
+403
+
+404
+
+409
+
+422
+
+429
+
+500
+
+Validar:
+
+- autenticação
+- autorização
+- payload inválido
+- parâmetros inválidos
+- usuário inexistente
+- grupo inexistente
+- permissões
+
+---
+
+# 10. Banco
+
+Sempre validar:
+
+- migrations
+- generate
+- validate
+- índices
+- constraints
+- cascades
+- duplicidade
+- rollback
+
+---
+
+# 11. Front-end
+
+Toda interface deve possuir:
+
+Loading
+
+Empty State
+
+Error State
+
+Success State
+
+Skeleton
+
+Responsividade
+
+Dark Mode
+
+Nunca assumir que sempre existirão dados.
+
+---
+
+# 12. Mobile
+
+Toda funcionalidade nova deve funcionar em:
+
+Desktop
+
+Tablet
+
+Mobile
+
+Especial atenção para:
+
+- scroll
+- drag and drop
+- long press
+- dropdowns
+- menus
+- modais
+- teclado virtual
+
+Nunca bloquear o scroll.
+
+---
+
+# 13. Drag & Drop
+
+Toda alteração envolvendo Kanban deve validar:
+
+- mover entre colunas
+- mover dentro da mesma coluna
+- desktop
+- touch
+- mobile
+- long press
+- scroll horizontal
+- scroll vertical
+- cancelamento
+- múltiplos movimentos
+- listas grandes
+
+---
+
+# 14. Performance
+
+Sempre analisar:
+
+- consultas N+1
+- queries duplicadas
+- re-renderizações
+- componentes pesados
+- imagens
+- cache
+- debounce
+- lazy loading
+- paginação
+
+Evitar chamadas desnecessárias.
+
+---
+
+# 15. Qualidade do Código
+
+Antes de finalizar qualquer tarefa executar obrigatoriamente:
+
+```bash
+npm run lint
+```
+
+```bash
+npx tsc --noEmit
+```
+
+```bash
+npx prisma validate
+```
+
+```bash
+npx prisma generate
+```
+
+```bash
+npm run build
+```
+
+Caso qualquer comando falhe:
+
+- corrigir
+- repetir todos os testes
+
+Nunca considerar uma tarefa concluída apenas porque compilou.
+
+---
+
+# 16. Testes Obrigatórios
+
+Após implementar qualquer funcionalidade:
+
+Executar o projeto.
+
+Testar manualmente a funcionalidade criada.
+
+Validar os fluxos completos.
+
+Simular um usuário real.
+
+Exemplos:
+
+- criar grupo
+- entrar em grupo
+- excluir grupo
+- adicionar jogo
+- mover jogo
+- remover jogo
+- pesquisar Steam
+- editar perfil
+- logout
+- login novamente
+- atualizar página
+- múltiplos cliques
+- conexão lenta
+- erro da API
+- usuário sem permissão
+
+Sempre tentar quebrar a funcionalidade.
+
+---
+
+# 17. Entrega
+
+Nenhuma tarefa será considerada concluída sem apresentar:
+
+## Arquitetura
+
+- decisões tomadas
+- justificativas
+
+## Banco
+
+- alterações
+- migrations
+
+## Componentes
+
+- criados
+- reutilizados
+- removidos
+
+## APIs
+
+- criadas
+- alteradas
+
+## Performance
+
+- melhorias realizadas
+
+## Possíveis melhorias futuras
+
+Sempre documentar os impactos da implementação.
+
+---
+
+# 18. Filosofia do Projeto
+
+As implementações devem priorizar:
+
+1. Escalabilidade
+2. Reutilização
+3. Simplicidade
+4. Performance
+5. Legibilidade
+6. Experiência do usuário
+
+Sempre pensar no projeto daqui a um ano.
+
+Evitar soluções que funcionem apenas para a tarefa atual.
+
+Toda implementação deve preparar o sistema para futuras funcionalidades, minimizando refatorações e dívida técnica.
+````

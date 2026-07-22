@@ -89,20 +89,22 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
       dispatchDropdown("HIDE");
 
       try {
+        const body: Record<string, string> = {
+          steamUrl: `https://store.steampowered.com/app/${appId}`,
+          groupId,
+        };
+
         const res = await fetch("/api/games", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            steamUrl: `https://store.steampowered.com/app/${appId}`,
-            groupId,
-          }),
+          body: JSON.stringify(body),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
           if (res.status === 409) {
-            addToast("Este jogo já está no GameNexus!", "info");
+            addToast("Este jogo já está neste grupo!", "info");
           } else {
             addToast(data.error || "Erro ao adicionar jogo", "error");
           }
@@ -110,7 +112,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
         }
 
         reset();
-        addToast(`${data.game.title} adicionado ao GameNexus!`, "success");
+        addToast(`${data.game.title} adicionado ao grupo!`, "success");
         router.refresh();
         inputRef.current?.focus();
       } catch {
@@ -126,17 +128,19 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
   const addGameByLink = useCallback(
     async (url: string) => {
       try {
+        const body: Record<string, string> = { steamUrl: url, groupId };
+
         const res = await fetch("/api/games", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ steamUrl: url, groupId }),
+          body: JSON.stringify(body),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
           if (res.status === 409) {
-            addToast("Este jogo já está no GameNexus!", "info");
+            addToast("Este jogo já está neste grupo!", "info");
           } else {
             addToast(data.error || "Erro ao adicionar jogo", "error");
           }
@@ -144,7 +148,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
         }
 
         reset();
-        addToast(`${data.game.title} adicionado ao GameNexus!`, "success");
+        addToast(`${data.game.title} adicionado ao grupo!`, "success");
         router.refresh();
         inputRef.current?.focus();
       } catch {
