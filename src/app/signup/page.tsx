@@ -70,7 +70,7 @@ export default function SignUpPage() {
         <div className="pixel-card p-8">
           {/* Header */}
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center pixel-border-glow animate-glow-pulse" style={{background: 'linear-gradient(135deg, #40ff80, #00e5ff)'}}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center pixel-border-glow animate-glow-pulse" style={{background: 'linear-gradient(135deg, #00ff88, #00d4ff)'}}>
               <span className="font-pixel text-lg text-black">+</span>
             </div>
             <h1 className="font-pixel text-base tracking-wider text-retro-text mb-1">
@@ -80,7 +80,7 @@ export default function SignUpPage() {
               OU{' '}
               <Link
                 href="/login"
-                className="text-retro-green hover:text-retro-accent transition-colors"
+                className="text-retro-primary hover:text-retro-accent transition-colors cyber-text-glow"
               >
                 FAÇA LOGIN SE JÁ TIVER UMA CONTA
               </Link>
@@ -175,9 +175,9 @@ export default function SignUpPage() {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-retro-border" />
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-retro-border to-transparent" />
             <span className="font-pixel text-[7px] text-retro-text-dim">OU</span>
-            <div className="h-px flex-1 bg-retro-border" />
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-retro-border to-transparent" />
           </div>
 
           {/* Discord */}

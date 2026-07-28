@@ -21,7 +21,11 @@ import { useGameRefresh } from "@/lib/use-game-refresh";
 import { useMoveGame } from "@/hooks/useMoveGame";
 import { SortableGameCard } from "./SortableGameCard";
 import { GameCard } from "./GameCard";
-import { KANBAN_COLUMNS, type GameCardData, type GameStatus } from "@/lib/types";
+import {
+  KANBAN_COLUMNS,
+  type GameCardData,
+  type GameStatus,
+} from "@/lib/types";
 
 interface KanbanBoardProps {
   games: GameCardData[];
@@ -32,18 +36,18 @@ interface KanbanBoardProps {
 // ─── Opções de ordenação ──────────────────────────────────────────────
 
 const SORT_OPTIONS = [
-  { value: "position",     label: "Posição padrão" },
-  { value: "review_desc",  label: "Nota (maior → menor)" },
-  { value: "review_asc",   label: "Nota (menor → maior)" },
-  { value: "name_asc",     label: "Nome (A-Z)" },
-  { value: "name_desc",    label: "Nome (Z-A)" },
-  { value: "price_asc",    label: "Preço (menor → maior)" },
+  { value: "position", label: "Posição padrão" },
+  { value: "review_desc", label: "Nota (maior → menor)" },
+  { value: "review_asc", label: "Nota (menor → maior)" },
+  { value: "name_asc", label: "Nome (A-Z)" },
+  { value: "name_desc", label: "Nome (Z-A)" },
+  { value: "price_asc", label: "Preço (menor → maior)" },
 ] as const;
 
 // ─── Auto-scroll helper ──────────────────────────────────────────────
 
-const AUTO_SCROLL_ZONE = 60;   // px da borda
-const AUTO_SCROLL_SPEED = 8;   // px por frame
+const AUTO_SCROLL_ZONE = 60; // px da borda
+const AUTO_SCROLL_SPEED = 8; // px por frame
 
 function useAutoScroll(dragging: boolean) {
   const scrollRef = useRef<number | null>(null);
@@ -68,10 +72,18 @@ function useAutoScroll(dragging: boolean) {
         const distBottom = h - rect.bottom;
 
         if (distTop < AUTO_SCROLL_ZONE && distTop > 0) {
-          const speed = Math.max(2, (AUTO_SCROLL_ZONE - distTop) / AUTO_SCROLL_ZONE * AUTO_SCROLL_SPEED);
+          const speed = Math.max(
+            2,
+            ((AUTO_SCROLL_ZONE - distTop) / AUTO_SCROLL_ZONE) *
+              AUTO_SCROLL_SPEED,
+          );
           window.scrollBy(0, -speed);
         } else if (distBottom < AUTO_SCROLL_ZONE && distBottom > 0) {
-          const speed = Math.max(2, (AUTO_SCROLL_ZONE - distBottom) / AUTO_SCROLL_ZONE * AUTO_SCROLL_SPEED);
+          const speed = Math.max(
+            2,
+            ((AUTO_SCROLL_ZONE - distBottom) / AUTO_SCROLL_ZONE) *
+              AUTO_SCROLL_SPEED,
+          );
           window.scrollBy(0, speed);
         }
       }
@@ -94,18 +106,19 @@ function EmptyColumnDropZone({ status }: { status: string }) {
     data: { type: "column", status },
   });
 
-  return (          <div
-              ref={setNodeRef}
-              className={`flex flex-1 items-center justify-center rounded-lg py-8 transition-all duration-200 ${
-                isOver
-                  ? "bg-retro-primary/10 ring-2 ring-retro-primary"
-                  : "border-2 border-dashed border-retro-border/40"
-              }`}
-            >
-              <p className="font-pixel text-[7px] text-retro-text-dim">
-                {isOver ? "SOLTE AQUI" : "Arraste jogos para cá"}
-              </p>
-            </div>
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex flex-1 items-center justify-center rounded-lg py-8 transition-all duration-200 ${
+        isOver
+          ? "bg-retro-primary/10 ring-2 ring-retro-primary"
+          : "border-2 border-dashed border-retro-border/40"
+      }`}
+    >
+      <p className="font-pixel text-[7px] text-retro-text-dim">
+        {isOver ? "SOLTE AQUI" : "Arraste jogos para cá"}
+      </p>
+    </div>
   );
 }
 
@@ -139,7 +152,7 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
       params.set("sort", value);
       router.push(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    [router, searchParams],
   );
 
   // Filtro por busca textual
@@ -160,7 +173,7 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
           gameIds: columnGames.map((g) => g.id),
         };
       }),
-    [filteredGames]
+    [filteredGames],
   );
 
   // Sensores: cada um exclusivo para seu dispositivo
@@ -191,19 +204,16 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
 
   // ─── Drag handlers ─────────────────────────────────────────────
 
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const game = event.active.data.current?.game as GameCardData | undefined;
-      if (game) {
-        setDraggedGame(game);
-        // Feedback tátil (vibração) no mobile
-        if (navigator.vibrate) {
-          navigator.vibrate(15);
-        }
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const game = event.active.data.current?.game as GameCardData | undefined;
+    if (game) {
+      setDraggedGame(game);
+      // Feedback tátil (vibração) no mobile
+      if (navigator.vibrate) {
+        navigator.vibrate(15);
       }
-    },
-    []
-  );
+    }
+  }, []);
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
@@ -240,31 +250,28 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
         prev.map((g) =>
           g.id === game.id
             ? { ...g, status: targetStatus, position: targetPosition }
-            : g
-        )
+            : g,
+        ),
       );
 
       // Chama API com rollback em caso de erro
-      await moveGame(game.id, {
-        status: targetStatus,
-        position: targetPosition,
-        groupId,
-      }, {
-        onRollback: () => setLocalGames(snapshot),
-      });
+      await moveGame(
+        game.id,
+        {
+          status: targetStatus,
+          position: targetPosition,
+          groupId,
+        },
+        {
+          onRollback: () => setLocalGames(snapshot),
+        },
+      );
     },
-    [groupId, localGames, moveGame]
+    [groupId, localGames, moveGame],
   );
 
   // Auto-scroll durante drag
   useAutoScroll(draggedGame !== null);
-
-  // ─── Estado de expansão (apenas um card expandido por vez) ──
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const handleToggleExpand = useCallback((gameId: string) => {
-    setExpandedId((prev) => (prev === gameId ? null : gameId));
-  }, []);
 
   // ─── Mover via menu (sem drag) ────────────────────────────────
 
@@ -278,7 +285,9 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
       setMovingId(gameId);
 
       // Posição: final da lista da coluna destino
-      const targetColumnGames = localGames.filter((g) => g.status === newStatus);
+      const targetColumnGames = localGames.filter(
+        (g) => g.status === newStatus,
+      );
       const targetPosition = targetColumnGames.length;
 
       // Snapshot para rollback
@@ -289,19 +298,23 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
         prev.map((g) =>
           g.id === gameId
             ? { ...g, status: newStatus, position: targetPosition }
-            : g
-        )
+            : g,
+        ),
       );
 
-      moveGame(gameId, {
-        status: newStatus,
-        position: targetPosition,
-        groupId,
-      }, {
-        onRollback: () => setLocalGames(snapshot),
-      }).finally(() => setMovingId(null));
+      moveGame(
+        gameId,
+        {
+          status: newStatus,
+          position: targetPosition,
+          groupId,
+        },
+        {
+          onRollback: () => setLocalGames(snapshot),
+        },
+      ).finally(() => setMovingId(null));
     },
-    [localGames, groupId, moveGame]
+    [localGames, groupId, moveGame],
   );
 
   // ─── Render ───────────────────────────────────────────────────
@@ -314,12 +327,12 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
     <div className="space-y-4">
       {/* Search + Sort + Status */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Search */}
+        {/* Search com terminal prefix */}
         <div className="relative w-full sm:max-w-sm md:max-w-md">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
-            <svg className="h-4 w-4 text-retro-text-dim" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
+            <span className="font-pixel text-[11px] text-retro-primary/60 leading-none">
+              &gt;
+            </span>
           </div>
           <input
             type="text"
@@ -332,11 +345,21 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 right-0 flex items-center pr-2 text-retro-text-dim hover:text-retro-text"
+              className="absolute inset-y-0 right-0 flex items-center pr-2 text-retro-text-dim hover:text-retro-primary transition-colors"
               aria-label="Limpar busca"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}
@@ -344,8 +367,11 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
 
         {/* Sort dropdown */}
         <div className="flex items-center gap-2">
-          <label htmlFor="sort-select" className="font-pixel text-[7px] text-retro-text-dim shrink-0 uppercase">
-            ORDENAR:
+          <label
+            htmlFor="sort-select"
+            className="font-pixel text-[7px] text-retro-primary/60 shrink-0 uppercase"
+          >
+            $ ORDENAR
           </label>
           <select
             id="sort-select"
@@ -361,17 +387,37 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
           </select>
 
           {isRefreshing && (
-            <svg className="h-3.5 w-3.5 animate-spin text-retro-primary shrink-0" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <svg
+              className="h-3.5 w-3.5 animate-spin text-retro-primary shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
           )}
 
-          <p className="font-pixel text-[7px] text-retro-text-dim whitespace-nowrap">
-            {hasFilter
-              ? `${filteredTotal}/${totalGames}`
-              : `${totalGames} JOGOS`}
-          </p>
+          <div className="flex items-center gap-1 border-l border-retro-border/20 pl-2">
+            <span className="font-pixel text-[6px] text-retro-primary/40">
+              ▸
+            </span>
+            <p className="font-pixel text-[7px] text-retro-text-dim whitespace-nowrap">
+              {hasFilter
+                ? `${filteredTotal}/${totalGames}`
+                : `${totalGames} JOGOS`}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -385,18 +431,23 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
           {gamesByColumn.map((column) => (
             <div
               key={column.key}
-              className={`flex flex-col rounded-xl border border-retro-border/30 bg-retro-bg/50 backdrop-blur-sm lg:flex-1 lg:min-h-0 overflow-hidden`}
+              className={`flex flex-col border border-retro-border/30 bg-retro-bg/50 backdrop-blur-sm lg:flex-1 lg:min-h-0 overflow-hidden`}
             >
-              {/* Header da Coluna */}
+              {/* Header da Coluna - cyber style */}
               <div
-                className={`flex items-center gap-2.5 px-4 py-3 border-b border-retro-border/20 ${column.headerBg}`}
+                className={`relative flex items-center gap-2.5 px-4 py-3 border-b border-retro-border/20 ${column.headerBg}`}
               >
-                <span className={`h-2.5 w-2.5 rounded-full ${column.dotColor} shadow-sm`} style={{boxShadow: `0 0 6px var(--color-${column.key === 'BACKLOG' ? 'retro-text-dim' : column.key === 'PLAYING' ? 'retro-green' : column.key === 'PAUSED' ? 'retro-amber' : column.key === 'COMPLETED' ? 'retro-cyan' : 'retro-red'})`}} />
+                {/* Neon top accent */}
+                <div className="pointer-events-none absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-retro-primary/20 to-transparent" />
+
+                <span
+                  className={`h-2.5 w-2.5 ${column.dotColor} cyber-glow-sm`}
+                />
                 <h3 className="font-pixel text-[9px] text-retro-text uppercase tracking-wider">
                   {column.title}
                 </h3>
-                <span className="ml-auto inline-flex items-center justify-center rounded-md bg-retro-surface/80 px-2 py-0.5 font-pixel text-[7px] text-retro-text-dim">
-                  {column.games.length}
+                <span className="ml-auto inline-flex items-center justify-center pixel-border-sm bg-retro-surface/80 px-2 py-0.5 font-pixel text-[7px] text-retro-text-dim">
+                  $ {column.games.length}
                 </span>
               </div>
 
@@ -405,8 +456,23 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                 <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[60vh] lg:max-h-[calc(100vh-400px)] scrollbar-thin pr-1.5">
                   {hasFilter && column.games.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                      <p className="text-xs text-zinc-600">
-                        Nenhum jogo encontrado com &ldquo;{searchQuery}&rdquo;
+                      <div className="mb-2 flex h-8 w-8 items-center justify-center border border-retro-border/30 bg-retro-surface/50">
+                        <svg
+                          className="h-4 w-4 text-retro-text-dim/40"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                          />
+                        </svg>
+                      </div>
+                      <p className="font-pixel text-[7px] text-retro-text-dim/60">
+                        NENHUM RESULTADO PARA &ldquo;{searchQuery}&rdquo;
                       </p>
                     </div>
                   )}
@@ -423,10 +489,10 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                           key={game.id}
                           game={game}
                           groupId={groupId}
-                          onMoveStatus={(status) => handleMoveStatus(game.id, status)}
+                          onMoveStatus={(status) =>
+                            handleMoveStatus(game.id, status)
+                          }
                           isMoving={movingId === game.id}
-                          expandedId={expandedId}
-                          onToggleExpand={handleToggleExpand}
                         />
                       ))}
                     </SortableContext>
@@ -438,19 +504,12 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
 
           <DragOverlay>
             {draggedGame ? (
-              <div className="rotate-2 scale-105 opacity-90 shadow-2xl shadow-retro-primary/10">
+              <div className="rotate-2 scale-105 opacity-90 shadow-2xl cyber-glow-md">
                 <GameCard game={draggedGame} />
               </div>
             ) : null}
           </DragOverlay>
         </DndContext>
-      </div>
-
-      {/* Footer com contagem */}
-      <div className="border-t border-retro-border/20 pt-3 text-center">
-        <span className="font-pixel text-[6px] text-retro-text-dim/60">
-          {totalGames} JOGO{totalGames !== 1 ? "S" : ""}
-        </span>
       </div>
     </div>
   );

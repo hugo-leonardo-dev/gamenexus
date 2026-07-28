@@ -245,7 +245,7 @@ export function GameSearchInput({ groupId }: GameSearchInputProps) {
             if (searchResults.length > 0) dispatchDropdown("SHOW");
           }}
           placeholder={placeholder}
-          className="retro-input w-full py-3 pl-10 pr-4 text-sm"
+          className="retro-input w-full py-3 pl-12 pr-4 text-sm"
           aria-label="Buscar jogo por nome ou colar link da Steam"
           aria-expanded={showDropdown}
           aria-autocomplete="list"

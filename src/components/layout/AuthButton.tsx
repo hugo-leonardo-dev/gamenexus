@@ -9,7 +9,7 @@ export function AuthButton() {
 
   if (status === "loading") {
     return (
-      <div className="h-8 w-20 animate-pulse rounded-lg bg-zinc-800" />
+      <div className="h-8 w-20 animate-pulse rounded-sm bg-retro-surface/50" />
     );
   }
 
@@ -18,19 +18,19 @@ export function AuthButton() {
       <div className="relative flex items-center gap-3">
         <Link
           href="/profile"
-          className="hidden font-pixel text-[9px] text-retro-text-dim transition-colors hover:text-retro-primary sm:block uppercase tracking-wider"
+          className="hidden font-pixel text-[9px] text-retro-text-dim transition-all hover:text-retro-primary hover:cyber-text-glow sm:block uppercase tracking-wider"
         >
           Perfil
         </Link>
         <Link
           href="/dashboard"
-          className="hidden font-pixel text-[9px] text-retro-text-dim transition-colors hover:text-retro-primary sm:block uppercase tracking-wider"
+          className="hidden font-pixel text-[9px] text-retro-text-dim transition-all hover:text-retro-primary hover:cyber-text-glow sm:block uppercase tracking-wider"
         >
           Dashboard
         </Link>
         <Link
           href="/profile"
-          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          className="group/avatar flex items-center gap-2 transition-all hover:opacity-90"
           title="Meu Perfil"
         >
           {session.user.image && (
@@ -39,7 +39,7 @@ export function AuthButton() {
               alt={session.user.name ?? "Avatar"}
               width={28}
               height={28}
-              className="ring-2 ring-retro-border pixel-border-sm"
+              className="ring-1 ring-retro-border/50 pixel-border-sm transition-all group-hover/avatar:ring-retro-primary/40 group-hover/avatar:cyber-glow-sm"
               style={{borderRadius: 0}}
             />
           )}
@@ -49,7 +49,7 @@ export function AuthButton() {
         </Link>
         <button
           onClick={() => signOut()}
-          className="pixel-btn bg-retro-red px-3 py-1.5 text-[9px] text-white"
+          className="pixel-btn border-retro-red/40 text-retro-red hover:bg-retro-red hover:text-white hover:border-retro-red px-3 py-1.5 text-[9px]"
         >
           Sair
         </button>

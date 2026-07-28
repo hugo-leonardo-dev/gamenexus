@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { formatPrice, type GameCardData } from "@/lib/types";
 
@@ -9,8 +9,6 @@ interface GameCardProps {
   onDelete?: () => void;
   deleting?: boolean;
   moveMenu?: React.ReactNode;
-  expanded?: boolean;
-  onToggleExpand?: () => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -21,13 +19,7 @@ function formatPlayerCount(n: number): string {
   return String(n);
 }
 
-const STATUS_CFG: Record<string, { label: string; dot: string }> = {
-  BACKLOG:   { label: "Quero Jogar", dot: "bg-zinc-500" },
-  PLAYING:   { label: "Jogando",     dot: "bg-retro-green" },
-  PAUSED:    { label: "Pausado",     dot: "bg-retro-amber" },
-  COMPLETED: { label: "Finalizado",  dot: "bg-retro-cyan" },
-  DROPPED:   { label: "Dropado",     dot: "bg-retro-red" },
-};
+
 
 // ─── Badges ──────────────────────────────────────────────────────────────
 
@@ -80,38 +72,23 @@ function PriceBadge({ game }: { game: GameCardData }) {
   );
 }
 
-export function GameCard({ game, onDelete, deleting, moveMenu, expanded, onToggleExpand }: GameCardProps) {
+export function GameCard({ game, onDelete, deleting, moveMenu }: GameCardProps) {
   const isDiscounted = game.discountPercent > 0;
   const isFree = game.currentPrice === 0;
-  const statusCfg = STATUS_CFG[game.status] ?? STATUS_CFG.BACKLOG;
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  const handleClick = useCallback(() => {
-    onToggleExpand?.();
-  }, [onToggleExpand]);
 
   return (
     <div
-      className={`group/card rounded-xl border border-retro-border/30 bg-retro-card-bg/80 backdrop-blur-sm transition-all duration-200 ${
+      className={`group/card border border-retro-border/30 bg-retro-card-bg backdrop-blur-sm transition-all duration-200 ${
         isDiscounted ? "ring-1 ring-retro-green/25" : ""
-      } ${
-        expanded
-          ? "shadow-lg shadow-retro-primary/15 ring-1 ring-retro-primary/25"
-          : "hover:border-retro-border/50 hover:shadow-md hover:-translate-y-0.5"
-      }`}
+      } hover:border-retro-primary/20 hover:shadow-md hover:-translate-y-0.5 hover:cyber-glow-sm`}
     >
       {/* ─── CAPA DO JOGO ───────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-t-xl bg-retro-surface" onClick={handleClick}>
-        {/* Status badge na capa */}
-        <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 rounded-md bg-black/60 backdrop-blur-sm px-2 py-1">
-          <span className={`h-2 w-2 rounded-full ${statusCfg.dot}`} />
-          <span className="font-pixel text-[6px] text-white/90 uppercase tracking-wider">{statusCfg.label}</span>
-        </div>
-
-        {/* Discount badge grande */}
+      <div className="relative overflow-hidden bg-retro-surface">
+        {/* Discount badge grande - neon */}
         {isDiscounted && (
-          <div className="absolute bottom-2 left-2 z-10 rounded-md bg-retro-green/90 backdrop-blur-sm px-2 py-1">
-            <span className="font-pixel text-[8px] text-black font-bold">-{game.discountPercent}%</span>
+          <div className="absolute bottom-2 left-2 z-10 cyber-chamfer-sm border border-retro-green/30 bg-retro-green/80 backdrop-blur-sm px-2 py-1">
+            <span className="font-pixel text-[8px] text-black font-bold cyber-text-glow-secondary">-{game.discountPercent}%</span>
           </div>
         )}
 
@@ -136,20 +113,16 @@ export function GameCard({ game, onDelete, deleting, moveMenu, expanded, onToggl
 
           {/* Skeleton enquanto carrega */}
           {!imageLoaded && game.imageUrl && (
-            <div className="absolute inset-0 animate-pulse bg-retro-surface" />
+            <div className="absolute inset-0 animate-pulse bg-retro-surface/50" />
           )}
         </div>
+
+        {/* Neon bottom border na capa */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-retro-primary/30 to-transparent" />
       </div>
 
       {/* ─── INFORMAÇÕES DO CARD ────────────────────────────────── */}
-      <div
-        className="p-3 sm:p-3.5 cursor-pointer select-none"
-        onClick={handleClick}
-        role="button"
-        tabIndex={0}
-        aria-expanded={expanded}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
-      >
+      <div className="p-3 sm:p-3.5 select-none">
         {/* Título */}
         <h3 className="font-pixel text-[9px] sm:text-[10px] text-retro-text leading-snug mb-1.5 sm:mb-2 line-clamp-2">
           {game.title}
@@ -167,7 +140,7 @@ export function GameCard({ game, onDelete, deleting, moveMenu, expanded, onToggl
         {/* Adicionado por + lixeira (web) */}
         <div className="flex items-center gap-1.5 mb-2">
           <span className="font-pixel text-[6px] text-retro-text-dim/60 uppercase tracking-wider">
-            Por
+            ADICIONADO POR
           </span>
           <span className="font-pixel text-[7px] text-retro-text-dim">
             {game.addedBy.name}
@@ -177,7 +150,7 @@ export function GameCard({ game, onDelete, deleting, moveMenu, expanded, onToggl
             <button
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(); }}
               disabled={deleting}
-              className="hidden sm:flex items-center justify-center ml-auto h-6 w-6 rounded text-retro-red/60 transition-all hover:text-retro-red disabled:opacity-40"
+              className="hidden sm:flex items-center justify-center ml-auto h-6 w-6 pixel-border-sm text-retro-red/60 transition-all hover:text-retro-red hover:cyber-glow-sm disabled:opacity-40"
               title="Remover jogo"
               aria-label={`Remover ${game.title}`}
             >
@@ -204,7 +177,7 @@ export function GameCard({ game, onDelete, deleting, moveMenu, expanded, onToggl
             <button
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(); }}
               disabled={deleting}
-              className="flex items-center justify-center ml-auto h-7 w-7 rounded-md text-retro-red/60 transition-all hover:text-retro-red hover:bg-retro-red/15 disabled:opacity-40"
+              className="cyber-chamfer-sm flex items-center justify-center ml-auto h-7 w-7 text-retro-red/60 transition-all hover:text-retro-red hover:bg-retro-red/15 disabled:opacity-40"
               title="Remover jogo"
               aria-label={`Remover ${game.title}`}
             >
@@ -223,54 +196,6 @@ export function GameCard({ game, onDelete, deleting, moveMenu, expanded, onToggl
         </div>
       </div>
 
-      {/* ─── CONTEÚDO EXPANDIDO ────────────────────────────────── */}
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          expanded ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="border-t border-retro-border/20 px-3.5 py-3 space-y-2.5">
-          {/* Review completo */}
-          {game.reviewSummary && (
-            <div className="flex items-center gap-2">
-              <span className="font-pixel text-[7px] text-retro-text-dim uppercase tracking-wider shrink-0">Review</span>
-              <span className="font-pixel text-[8px] text-retro-text">
-                {game.reviewSummary}
-                {game.reviewScore !== null && <span className="ml-1 text-retro-text-dim">({game.reviewScore}%)</span>}
-              </span>
-            </div>
-          )}
-
-          {/* Jogadores */}
-          {game.currentPlayers !== null && game.currentPlayers > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="font-pixel text-[7px] text-retro-text-dim uppercase tracking-wider shrink-0">Jogadores</span>
-              <span className="font-pixel text-[8px] text-retro-text">
-                {formatPlayerCount(game.currentPlayers)} agora
-                {game.peak24h !== null && game.peak24h > 0 && (
-                  <span className="ml-2 text-retro-text-dim">Pico: {formatPlayerCount(game.peak24h)}</span>
-                )}
-              </span>
-            </div>
-          )}
-
-          {/* Preços detalhados */}
-          <div className="flex items-center gap-2">
-            <span className="font-pixel text-[7px] text-retro-text-dim uppercase tracking-wider shrink-0">Preço</span>
-            <span className="font-pixel text-[9px] text-retro-text">
-              {isFree ? "GRÁTIS" : formatPrice(game.currentPrice)}
-            </span>
-            {isDiscounted && game.originalPrice !== null && (
-              <>
-                <span className="font-pixel text-[7px] text-retro-text-dim line-through">{formatPrice(game.originalPrice)}</span>
-                <span className="bg-retro-green/20 text-retro-green font-pixel text-[7px] px-1 leading-tight rounded">-{game.discountPercent}%</span>
-              </>
-            )}
-          </div>
-
-
-        </div>
-      </div>
     </div>
   );
 }

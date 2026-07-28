@@ -81,7 +81,7 @@ export function MoveGameMenu({
           setOpen((prev) => !prev);
         }}
         disabled={isMoving}
-        className="flex items-center justify-center h-7 w-7 rounded-md bg-retro-surface/50 text-retro-text-dim/70 transition-all hover:bg-retro-surface hover:text-retro-text disabled:opacity-40"
+        className="cyber-chamfer-sm flex items-center justify-center h-7 w-7 border border-retro-border/30 bg-retro-surface/50 text-retro-text-dim/70 transition-all hover:border-retro-primary/30 hover:bg-retro-surface hover:text-retro-primary hover:cyber-glow-sm disabled:opacity-40"
         title="Mover para..."
         aria-label={`Mover ${game.title} para outra coluna`}
         aria-haspopup="true"
@@ -111,11 +111,13 @@ export function MoveGameMenu({
             ref={menuRef}
             role="menu"
             aria-label={`Mover ${game.title} para:`}
-            className="absolute right-0 top-full z-50 mt-1 w-44 rounded-xl border border-retro-border/30 bg-retro-bg/95 backdrop-blur-xl p-1.5 shadow-xl animate-float-up"
+            className="absolute right-0 top-full z-50 mt-1 w-44 border border-retro-border/30 bg-retro-bg/95 backdrop-blur-xl p-1.5 shadow-xl animate-float-up"
           >
-            <p className="px-2.5 py-1.5 font-pixel text-[7px] text-retro-text-dim uppercase tracking-wider border-b border-retro-border/20 mb-1">
-              Mover para
-            </p>
+            {/* Terminal-style header */}
+            <div className="flex items-center gap-2 px-2.5 py-1.5 mb-1 border-b border-retro-border/20">
+              <span className="font-pixel text-[7px] text-retro-primary/60">$</span>
+              <span className="font-pixel text-[7px] text-retro-text-dim uppercase tracking-wider">Mover para</span>
+            </div>
             {availableColumns.map((col) => {
               const Icon = STATUS_ICONS[col.key as keyof typeof STATUS_ICONS];
               return (
@@ -128,10 +130,10 @@ export function MoveGameMenu({
                     handleSelect(col.key);
                   }}
                   disabled={isMoving}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 transition-all ${
+                  className={`flex w-full items-center gap-2.5 px-2.5 py-2 transition-all ${
                     isMoving
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-retro-surface-hover cursor-pointer"
+                      : "hover:bg-retro-surface-hover hover:text-retro-primary hover:cyber-text-glow cursor-pointer"
                   }`}
                 >
                   <span className="text-sm shrink-0">{Icon}</span>
@@ -160,12 +162,13 @@ export function MoveGameMenu({
             ref={menuRef}
             role="menu"
             aria-label={`Mover ${game.title} para:`}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border border-retro-border/30 bg-retro-bg/95 backdrop-blur-xl p-4 pb-8 animate-float-up"
+            className="fixed bottom-0 left-0 right-0 z-50 border-t border-retro-border/30 bg-retro-bg/95 backdrop-blur-xl p-4 pb-8 animate-float-up"
           >
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-retro-border/40" />
+            {/* Drag handle neon */}
+            <div className="mx-auto mb-4 h-1 w-10 bg-retro-border/40" />
 
             <p className="mb-4 text-center font-pixel text-[9px] text-retro-text tracking-wider">
-              Mover <span className="text-retro-primary">{game.title}</span> para:
+              Mover <span className="text-retro-primary cyber-text-glow">{game.title}</span> para:
             </p>
 
             <div className="space-y-1">
@@ -180,15 +183,15 @@ export function MoveGameMenu({
                       e.preventDefault();
                       handleSelect(col.key);
                     }}
-                    disabled={isMoving}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 transition-all ${
-                      isMoving
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-retro-surface-hover cursor-pointer"
-                    }`}
-                  >
-                    <span className="text-base shrink-0">{Icon}</span>
-                    <span className="font-pixel text-[9px] text-retro-text uppercase tracking-wider">
+                  disabled={isMoving}
+                  className={`flex w-full items-center gap-3 px-3 py-3 transition-all ${
+                    isMoving
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-retro-surface-hover hover:text-retro-primary hover:cyber-text-glow cursor-pointer"
+                  }`}
+                >
+                  <span className="text-base shrink-0">{Icon}</span>
+                  <span className="font-pixel text-[9px] text-retro-text uppercase tracking-wider">
                       {STATUS_LABELS[col.key as keyof typeof STATUS_LABELS]}
                     </span>
                   </button>
@@ -198,7 +201,7 @@ export function MoveGameMenu({
 
             <button
               onClick={() => setOpen(false)}
-              className="mt-3 w-full py-2.5 text-center font-pixel text-[8px] text-retro-text-dim transition-colors hover:text-retro-text uppercase tracking-wider"
+              className="mt-3 w-full py-2.5 text-center font-pixel text-[8px] text-retro-text-dim transition-colors hover:text-retro-primary hover:cyber-text-glow uppercase tracking-wider"
             >
               Cancelar
             </button>

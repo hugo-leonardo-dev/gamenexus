@@ -28,7 +28,7 @@ export default async function HomePage() {
       {/* ════════════════════════════════════════════════ */}
       {/* HERO */}
       {/* ════════════════════════════════════════════════ */}
-      <section className="relative flex flex-col items-center overflow-hidden px-4 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-32 lg:pb-36">
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-12 pb-16 sm:pt-20 sm:pb-24 lg:pt-32 lg:pb-40">
         {/* Background glow */}
         <div className="hero-glow pointer-events-none absolute inset-0" />
 
@@ -39,7 +39,7 @@ export default async function HomePage() {
         <div
           className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full opacity-10 blur-3xl"
           style={{
-            background: "radial-gradient(circle, #4a7cff, transparent)",
+            background: "radial-gradient(circle, #00ff88, transparent)",
           }}
         />
 
@@ -47,12 +47,12 @@ export default async function HomePage() {
         <div
           className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full opacity-10 blur-3xl"
           style={{
-            background: "radial-gradient(circle, #8b5cf6, transparent)",
+            background: "radial-gradient(circle, #ff00ff, transparent)",
           }}
         />
 
         {/* ─── Hero Content ─── */}
-        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
+        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-16 lg:flex-row lg:items-center lg:gap-20">
           {/* Left: Text */}
           <div className="flex-1 text-center lg:text-left">
             {/* Title */}
@@ -63,13 +63,13 @@ export default async function HomePage() {
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-retro-text-dim sm:text-lg lg:mx-0">
+            <p className="mt-8 max-w-lg text-base leading-relaxed text-retro-text-dim sm:text-lg lg:mx-0">
               Crie grupos privados, adicione jogos da Steam, acompanhe o
               progresso de cada título e nunca mais esqueça o que jogar.
             </p>
 
             {/* CTAs */}
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
               <Link
                 href="/login"
                 className="group relative inline-flex items-center gap-3 overflow-hidden rounded-lg bg-[#5865F2] px-7 py-3.5 font-pixel text-[9px] text-white transition-all hover:bg-[#4752C4] hover:shadow-[0_0_24px_rgba(88,101,242,0.3)]"
@@ -80,7 +80,7 @@ export default async function HomePage() {
 
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-lg border border-retro-border/50 bg-retro-surface/50 px-7 py-3.5 font-pixel text-[9px] text-retro-text backdrop-blur-sm transition-all hover:border-retro-primary/30 hover:bg-retro-surface hover:shadow-[0_0_16px_rgba(74,124,255,0.1)]"
+                className="inline-flex items-center gap-2 rounded-lg border border-retro-border/50 bg-retro-surface/50 px-7 py-3.5 font-pixel text-[9px] text-retro-text backdrop-blur-sm transition-all hover:border-retro-primary/30 hover:bg-retro-surface hover:shadow-[0_0_16px_rgba(0,255,136,0.1)]"
               >
                 <svg
                   className="h-4 w-4"
@@ -100,7 +100,7 @@ export default async function HomePage() {
             </div>
 
             {/* Stats */}
-            <div className="mt-10 flex items-center gap-6 text-center lg:justify-start">
+            <div className="mt-14 flex items-center justify-center gap-6 text-center lg:justify-start">
               <div>
                 <div className="font-pixel text-lg text-retro-primary">
                   100%
@@ -134,7 +134,7 @@ export default async function HomePage() {
                 className="pointer-events-none absolute -inset-8 rounded-3xl opacity-20 blur-2xl"
                 style={{
                   background:
-                    "radial-gradient(circle at center, #4a7cff, transparent)",
+                    "radial-gradient(circle at center, #00ff88, transparent)",
                 }}
               />
 
@@ -176,7 +176,7 @@ export default async function HomePage() {
                     <MockupCard
                       title="Dark Souls III"
                       image="DS"
-                      color="#4a7cff"
+                      color="#00ff88"
                     />
                     <MockupCard
                       title="Stardew Valley"
@@ -381,7 +381,7 @@ export default async function HomePage() {
               }
               title="Steam Integration"
               description="Importe jogos automaticamente com apenas um link. Preços, capas e dados são sincronizados."
-              color="#4a7cff"
+              color="#00ff88"
             />
             <FeatureCard
               icon={
@@ -401,7 +401,7 @@ export default async function HomePage() {
               }
               title="Grupos Privados"
               description="Crie grupos com código de convite. Apenas quem você chamar pode participar e ver os jogos."
-              color="#8b5cf6"
+              color="#ff00ff"
             />
             <FeatureCard
               icon={
@@ -421,7 +421,7 @@ export default async function HomePage() {
               }
               title="Kanban Visual"
               description="Arraste jogos entre colunas com drag & drop. Backlog, jogando, pausados e finalizados."
-              color="#ffd700"
+              color="#ff00ff"
             />
             <FeatureCard
               icon={
@@ -441,7 +441,7 @@ export default async function HomePage() {
               }
               title="Responsivo"
               description="Funciona perfeitamente no celular, tablet e desktop. Organize seus jogos de qualquer lugar."
-              color="#00e5ff"
+              color="#00d4ff"
             />
             <FeatureCard
               icon={
@@ -497,13 +497,13 @@ export default async function HomePage() {
             <div
               className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full opacity-10 blur-3xl"
               style={{
-                background: "radial-gradient(circle, #4a7cff, transparent)",
+                background: "radial-gradient(circle, #00ff88, transparent)",
               }}
             />
             <div
               className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full opacity-10 blur-3xl"
               style={{
-                background: "radial-gradient(circle, #8b5cf6, transparent)",
+                background: "radial-gradient(circle, #ff00ff, transparent)",
               }}
             />
 
@@ -528,7 +528,7 @@ export default async function HomePage() {
 
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 rounded-lg border border-retro-border/50 bg-retro-surface/50 px-8 py-3.5 font-pixel text-[9px] text-retro-text backdrop-blur-sm transition-all hover:border-retro-primary/30 hover:bg-retro-surface"
+                  className="inline-flex items-center gap-2 rounded-lg border border-retro-border/50 bg-retro-surface/50 px-8 py-3.5 font-pixel text-[9px] text-retro-text backdrop-blur-sm transition-all hover:border-retro-primary/30 hover:bg-retro-surface hover:shadow-[0_0_16px_rgba(0,255,136,0.1)]"
                 >
                   <svg
                     className="h-4 w-4"
@@ -682,7 +682,7 @@ function StepCard({
 }) {
   return (
     <div className="step-connector group text-center">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-retro-primary/20 to-retro-purple/20 ring-1 ring-retro-primary/20 transition-all group-hover:ring-retro-primary/40 group-hover:shadow-[0_0_16px_rgba(74,124,255,0.15)]">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-retro-primary/20 to-retro-purple/20 ring-1 ring-retro-primary/20 transition-all group-hover:ring-retro-primary/40 group-hover:shadow-[0_0_16px_rgba(0,255,136,0.15)]">
         <div className="text-retro-primary">{icon}</div>
       </div>
       <span className="mb-2 block font-pixel text-[10px] text-gradient">

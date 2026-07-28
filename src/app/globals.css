@@ -1,91 +1,225 @@
 @import "tailwindcss";
 
-/* ─── Retro Pixel Art Theme ───────────────────────────────────────────── */
-/* Inspired by classic 80s/90s RPGs: Zelda, Final Fantasy, Chrono Trigger */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CYBERPUNK / GLITCH DESIGN SYSTEM                                     */
+/*  Inspired by: Blade Runner, Akira, Ghost in the Shell, The Matrix     */
+/*  DESIGN.md — High-Tech, Low-Life.                                     */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 @theme inline {
-  /* Retro palette */
-  --color-retro-bg: #0d0d1a;
-  --color-retro-surface: #1a1a30;
-  --color-retro-surface-hover: #252545;
-  --color-retro-border: #2a2a50;
-  --color-retro-border-light: #3a3a6a;
-  --color-retro-primary: #4a7cff;
-  --color-retro-accent: #ffd700;
-  --color-retro-green: #40ff80;
-  --color-retro-red: #ff3355;
-  --color-retro-amber: #ffb000;
-  --color-retro-purple: #8b5cf6;
-  --color-retro-cyan: #00e5ff;
-  --color-retro-text: #d0d0f0;
-  --color-retro-text-dim: #9898c0;
-  --color-retro-text-bright: #ffffff;
-  --color-retro-card-bg: #12122a;
+  /* ─── Cyberpunk Palette ──────────────────────────────────────────── */
+  --color-retro-bg: #0a0a0f;            /* Deep void w/ blue undertone  */
+  --color-retro-surface: #1c1c2e;        /* Muted UI chrome              */
+  --color-retro-surface-hover: #252545;  /* Elevated hover state         */
+  --color-retro-border: #2a2a3a;         /* Subtle borders               */
+  --color-retro-border-light: #3a3a5a;   /* Slightly lighter border      */
+  --color-retro-primary: #00ff88;        /* PRIMARY NEON — Matrix green  */
+  --color-retro-accent: #ff00ff;         /* SECONDARY NEON — Hot magenta */
+  --color-retro-green: #40ff80;          /* Complementary green          */
+  --color-retro-red: #ff3366;            /* Destructive / error red-pink */
+  --color-retro-amber: #ffb000;          /* Warm amber / warning         */
+  --color-retro-purple: #8b5cf6;         /* Electric purple              */
+  --color-retro-cyan: #00d4ff;           /* TERTIARY NEON — Cyan         */
+  --color-retro-text: #ffffff;           /* Primary text (pure white)      */
+  --color-retro-text-dim: #c0c0d0;       /* Muted secondary (muito mais contraste) */
+  --color-retro-text-bright: #ffffff;    /* Bright white                 */
+  --color-retro-card-bg: #12121a;        /* Card / input background      */
 
-  /* Pixel font */
-  --font-pixel: var(--font-pixel);
-
-  /* Retain Geist for body */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-heading: var(--font-heading);   /* Orbitron — geometric, futuristic  */
+  --font-pixel: var(--font-pixel);       /* Share Tech Mono — tech labels     */
+  --font-mono: var(--font-mono);         /* JetBrains Mono — terminal feel    */
+  --font-sans: var(--font-mono);         /* Body uses JetBrains Mono          */
 }
 
-/* ─── Base ────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  BASE                                                                    */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 body {
   background: var(--color-retro-bg);
   color: var(--color-retro-text);
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background-color: rgba(74, 124, 255, 0.4);
-  color: #fff;
+  background-color: rgba(0, 255, 136, 0.35);
+  color: #0a0a0f;
 }
 
-/* ─── Scanline Overlay ────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  FULL-PAGE SCANLINE OVERLAY                                            */
+/*  Subtle CRT horizontal lines across the entire viewport               */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .scanline-overlay {
   background: repeating-linear-gradient(
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.08) 2px,
-    rgba(0, 0, 0, 0.08) 4px
+    rgba(0, 0, 0, 0.25) 2px,
+    rgba(0, 0, 0, 0.25) 4px
   );
   pointer-events: none;
 }
 
-/* ─── CRT Glow ────────────────────────────────────────────────────────── */
+/* ─── Moving scanline beam (optional extra) ──────────────────────────── */
+
+.scanline-beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline-beam::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.08), transparent);
+  animation: scanline-beam-move 8s linear infinite;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CRT / VIGNETTE GLOW                                                    */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .crt-glow {
   background: radial-gradient(
     ellipse at center,
-    rgba(74, 124, 255, 0.06) 0%,
+    rgba(0, 255, 136, 0.04) 0%,
     transparent 70%
   );
   pointer-events: none;
 }
 
-/* ─── Vignette ────────────────────────────────────────────────────────── */
-
 .vignette-overlay {
   background: radial-gradient(
     ellipse at center,
     transparent 60%,
-    rgba(0, 0, 0, 0.4) 100%
+    rgba(0, 0, 0, 0.5) 100%
   );
   pointer-events: none;
 }
 
-/* ─── Pixel Border Utility ────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  UTILITY LAYER — Custom classes com suporte a variantes Tailwind v4    */
+/*  Classes em @layer utilities permitem hover:, group-hover:, etc.       */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* ─── Chamfered corners ────────────────────────────────────────── */
+  .cyber-chamfer {
+    clip-path: polygon(
+      0 12px,
+      12px 0,
+      calc(100% - 12px) 0,
+      100% 12px,
+      100% calc(100% - 12px),
+      calc(100% - 12px) 100%,
+      12px 100%,
+      0 calc(100% - 12px)
+    );
+  }
+
+  .cyber-chamfer-sm {
+    clip-path: polygon(
+      0 6px,
+      6px 0,
+      calc(100% - 6px) 0,
+      100% 6px,
+      100% calc(100% - 6px),
+      calc(100% - 6px) 100%,
+      6px 100%,
+      0 calc(100% - 6px)
+    );
+  }
+
+  /* ─── Neon glow box-shadows ──────────────────────────────────────── */
+  .cyber-glow-sm {
+    box-shadow: 0 0 3px #00ff88, 0 0 6px rgba(0, 255, 136, 0.3);
+  }
+
+  .cyber-glow-md {
+    box-shadow: 0 0 5px #00ff88, 0 0 10px rgba(0, 255, 136, 0.4);
+  }
+
+  .cyber-glow-lg {
+    box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.3);
+  }
+
+  .cyber-glow-secondary {
+    box-shadow: 0 0 5px #ff00ff, 0 0 20px rgba(255, 0, 255, 0.6);
+  }
+
+  .cyber-glow-tertiary {
+    box-shadow: 0 0 5px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.6);
+  }
+
+  /* ─── Neon text glow ──────────────────────────────────────────── */
+  .cyber-text-glow {
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  }
+
+  .cyber-text-glow-secondary {
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+  }
+
+  .cyber-text-glow-tertiary {
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CHROMATIC ABERRATION / GLITCH TEXT                                    */
+/*  Apply .cyber-glitch to hero headlines for that corrupted-data feel   */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+.cyber-glitch {
+  position: relative;
+  animation: glitch 4s infinite;
+}
+
+.cyber-glitch::before,
+.cyber-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cyber-glitch::before {
+  color: #ff00ff;
+  z-index: -1;
+  animation: glitch-shift-left 4s infinite;
+}
+
+.cyber-glitch::after {
+  color: #00d4ff;
+  z-index: -1;
+  animation: glitch-shift-right 4s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  PIXEL BORDERS (updated for cyberpunk)                                 */
+/*  Cleaner, sharper borders with neon accent glow                        */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .pixel-border {
   box-shadow:
-    /* Bottom */ 0 2px 0 0 var(--color-retro-border-light),
-    /* Right */ 2px 0 0 0 var(--color-retro-border-light),
-    /* Top */ 0 -2px 0 0 var(--color-retro-border),
-    /* Left */ -2px 0 0 0 var(--color-retro-border);
+    0 1px 0 0 var(--color-retro-border-light),
+    1px 0 0 0 var(--color-retro-border-light),
+    0 -1px 0 0 var(--color-retro-border),
+    -1px 0 0 0 var(--color-retro-border);
 }
 
 .pixel-border-sm {
@@ -98,44 +232,73 @@ body {
 
 .pixel-border-accent {
   box-shadow:
-    0 2px 0 0 var(--color-retro-primary),
-    2px 0 0 0 var(--color-retro-primary),
-    0 -2px 0 0 #3a5fcc,
-    -2px 0 0 0 #3a5fcc;
+    0 1px 0 0 var(--color-retro-primary),
+    1px 0 0 0 var(--color-retro-primary),
+    0 -1px 0 0 rgba(0, 255, 136, 0.5),
+    -1px 0 0 0 rgba(0, 255, 136, 0.5),
+    0 0 8px rgba(0, 255, 136, 0.15);
 }
 
 .pixel-border-glow {
   box-shadow:
-    0 2px 0 0 var(--color-retro-border-light),
-    2px 0 0 0 var(--color-retro-border-light),
-    0 -2px 0 0 var(--color-retro-border),
-    -2px 0 0 0 var(--color-retro-border),
-    0 0 20px rgba(74, 124, 255, 0.15);
+    0 1px 0 0 var(--color-retro-border-light),
+    1px 0 0 0 var(--color-retro-border-light),
+    0 -1px 0 0 var(--color-retro-border),
+    -1px 0 0 0 var(--color-retro-border),
+    0 0 12px rgba(0, 255, 136, 0.1);
 }
 
-/* ─── Card Pixel Border (like a game cartridge) ───────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  PIXEL CARD — Chamfered corners + neon accent                         */
+/*  Instead of rounded borders, uses subtle clip-path                     */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .pixel-card {
   background: var(--color-retro-card-bg);
+  border: 1px solid var(--color-retro-border);
   box-shadow:
-    /* Outset border layer */ 0 3px 0 0 var(--color-retro-border-light),
-    3px 0 0 0 var(--color-retro-border-light),
-    0 -3px 0 0 var(--color-retro-border),
-    -3px 0 0 0 var(--color-retro-border),
-    /* Shadow */ 0 4px 12px rgba(0, 0, 0, 0.3);
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all 200ms ease;
 }
 
-/* ─── Press Start 2P font utility ─────────────────────────────────────── */
+.pixel-card:hover {
+  border-color: rgba(0, 255, 136, 0.2);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 0 8px rgba(0, 255, 136, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  FONT UTILITY                                                           */
+/*  .font-pixel now uses Share Tech Mono (cleaner tech labels)            */
+/*  Headings should use Orbitron directly                                 */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .font-pixel {
   font-family: var(--font-pixel);
-  letter-spacing: 0.05em;
-  /* Improve readability at small sizes */
+  letter-spacing: 0.1em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Pixel image rendering ───────────────────────────────────────────── */
+.font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-terminal {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  PIXEL IMAGE RENDERING                                                  */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .pixel-image {
   image-rendering: pixelated;
@@ -143,80 +306,245 @@ body {
   image-rendering: crisp-edges;
 }
 
-/* ─── CRT Screen (for Kanban columns) ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CRT SCREEN — For Kanban columns and terminal panels                  */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .crt-screen {
   background: var(--color-retro-surface);
-  border: 2px solid var(--color-retro-border);
+  border: 1px solid var(--color-retro-border);
   box-shadow:
     inset 0 0 30px rgba(0, 0, 0, 0.3),
-    0 0 15px rgba(74, 124, 255, 0.08);
+    0 0 12px rgba(0, 255, 136, 0.04);
 }
 
-/* ─── Pixel Button ────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CYBERPUNK BUTTON — .pixel-btn                                         */
+/*  Chamfered corners (via clip-path), neon border, monospace text        */
+/*  Hover: fills with accent color, text inverts, neon glow appears       */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .pixel-btn {
   font-family: var(--font-pixel);
-  font-size: 10px;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  box-shadow:
-    0 2px 0 0 rgba(0, 0, 0, 0.3),
-    2px 0 0 0 rgba(0, 0, 0, 0.3),
-    0 -1px 0 0 rgba(255, 255, 255, 0.1),
-    -1px 0 0 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.1s ease;
+  border: 1px solid var(--color-retro-border);
+  background: transparent;
+  color: var(--color-retro-text);
+  clip-path: polygon(
+    0 6px,
+    6px 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0 calc(100% - 6px)
+  );
+  transition: all 150ms ease;
+  position: relative;
 }
 
-.pixel-btn:active {
-  transform: translateY(2px);
-  box-shadow:
-    0 1px 0 0 rgba(0, 0, 0, 0.3),
-    1px 0 0 0 rgba(0, 0, 0, 0.3),
-    0 -1px 0 0 rgba(255, 255, 255, 0.1),
-    -1px 0 0 0 rgba(255, 255, 255, 0.1);
+.pixel-btn:hover:not(:disabled) {
+  border-color: var(--color-retro-primary);
+  color: #0a0a0f;
+  background: var(--color-retro-primary);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.pixel-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 0 4px rgba(0, 255, 136, 0.3);
 }
 
 .pixel-btn:disabled {
   opacity: 0.4;
-  transform: none;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* ─── Retro Input ─────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  TERMINAL-STYLE INPUT — .retro-input                                   */
+/*  Monospace, deep background, ">" prefix space, accent glow on focus    */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .retro-input {
-  background: #0a0a18;
-  border: 2px solid var(--color-retro-border);
-  color: var(--color-retro-text);
-  font-family: var(--font-sans);
-  transition: all 0.15s ease;
+  background: #0a0a0f;
+  border: 1px solid var(--color-retro-border);
+  color: var(--color-retro-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  transition: all 200ms ease;
+  outline: none;
 }
 
 .retro-input:focus {
-  outline: none;
   border-color: var(--color-retro-primary);
   box-shadow:
-    0 0 0 1px rgba(74, 124, 255, 0.2),
-    0 0 12px rgba(74, 124, 255, 0.1);
+    0 0 0 1px rgba(0, 255, 136, 0.15),
+    0 0 10px rgba(0, 255, 136, 0.08);
+  color: var(--color-retro-text);
 }
 
 .retro-input::placeholder {
   color: var(--color-retro-text-dim);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
 }
 
-/* ─── Badge Pixel ─────────────────────────────────────────────────────── */
+/* ─── Terminal prefix: ">" before input ─────────────────────────────── */
+
+.retro-input-wrapper {
+  position: relative;
+}
+
+.retro-input-wrapper::before {
+  content: ">";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-retro-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.retro-input-wrapper .retro-input {
+  padding-left: 32px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CYBERBADGE — .pixel-badge                                             */
+/*  Small monospace labels with border                                    */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .pixel-badge {
   font-family: var(--font-pixel);
-  font-size: 9px;
-  letter-spacing: 0.05em;
+  font-size: 11px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  padding: 3px 6px;
+  padding: 2px 6px;
+  border: 1px solid var(--color-retro-border);
+  background: var(--color-retro-surface);
+  color: var(--color-retro-text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* ─── Animations ──────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  ANIMATIONS — Cyberpunk feel                                           */
+/*  Sharp, digital, slightly mechanical                                   */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
+/* ─── Glitch random offset (text position) ──────────────────────────── */
+@keyframes glitch {
+  0%, 90%, 100% { transform: translate(0); }
+  92% { transform: translate(-2px, 1px); }
+  94% { transform: translate(2px, -1px); }
+  96% { transform: translate(-1px, 0); }
+  98% { transform: translate(1px, 1px); }
+}
+
+@keyframes glitch-shift-left {
+  0%, 90%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  92% { clip-path: inset(20% 0 60% 0); transform: translate(-3px); }
+  94% { clip-path: inset(50% 0 30% 0); transform: translate(3px); }
+  96% { clip-path: inset(10% 0 70% 0); transform: translate(-2px); }
+  98% { clip-path: inset(40% 0 40% 0); transform: translate(2px); }
+}
+
+@keyframes glitch-shift-right {
+  0%, 90%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  92% { clip-path: inset(60% 0 20% 0); transform: translate(3px); }
+  94% { clip-path: inset(30% 0 50% 0); transform: translate(-3px); }
+  96% { clip-path: inset(70% 0 10% 0); transform: translate(2px); }
+  98% { clip-path: inset(40% 0 30% 0); transform: translate(-2px); }
+}
+
+/* ─── RGB Chromatic Pulse ───────────────────────────────────────────── */
+@keyframes rgbShift {
+  0%, 100% {
+    text-shadow:
+      -1px 0 #ff00ff,
+      1px 0 #00d4ff;
+  }
+  25% {
+    text-shadow:
+      1px 0 #ff00ff,
+      -1px 0 #00d4ff;
+  }
+  50% {
+    text-shadow:
+      -1px 0 #ff00ff,
+      1px 0 #00d4ff;
+  }
+  75% {
+    text-shadow:
+      1px 0 #ff00ff,
+      -1px 0 #00d4ff;
+  }
+}
+
+/* ─── Moving scanline beam ──────────────────────────────────────────── */
+@keyframes scanline-beam-move {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* ─── Flicker (old CRT instability) ─────────────────────────────────── */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* ─── Float up (dropdowns, dialogs) ─────────────────────────────────── */
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Neon glow pulse ───────────────────────────────────────────────── */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 255, 136, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+  }
+}
+
+/* ─── Blink (cursor) ────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── Drag handle pulso (mobile) ────────────────────────────────────── */
+@keyframes drag-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+/* ─── CRT ON effect (screen boot) ───────────────────────────────────── */
 @keyframes crt-on {
   0% {
     opacity: 0;
@@ -236,44 +564,19 @@ body {
   }
 }
 
-@keyframes scanline-move {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100vh);
-  }
-}
-
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
-}
-
-@keyframes float-up {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes glow-pulse {
+/* ─── Hero glow pulse ───────────────────────────────────────────────── */
+@keyframes hero-glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(74, 124, 255, 0.2);
+    opacity: 0.5;
+    transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 20px rgba(74, 124, 255, 0.4);
+    opacity: 1;
+    transform: scale(1.1);
   }
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
+/* ─── Animation utility classes ─────────────────────────────────────── */
 
 .animate-crt-on {
   animation: crt-on 0.6s ease-out;
@@ -295,70 +598,113 @@ body {
   animation: blink 1s step-end infinite;
 }
 
-/* ─── Grid Background ────────────────────────────────────── */
+.animate-drag-pulse {
+  animation: drag-pulse 0.5s ease-in-out 3;
+}
+
+.animate-rgb-shift {
+  animation: rgbShift 3s ease-in-out infinite;
+}
+
+.animate-glitch {
+  animation: glitch 4s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  CIRCUIT / GRID BACKGROUND PATTERN                                     */
+/*  Subtle PCB trace aesthetic for section backgrounds                    */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .bg-grid {
   background-image:
-    linear-gradient(rgba(74, 124, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(74, 124, 255, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
+    linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
 
-/* ─── Gradient Text ─────────────────────────────────────── */
+.bg-circuit {
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.02) 0%, transparent 50%);
+  background-size: 80px 80px, 80px 80px, 100% 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  GRADIENT TEXT — Neon color cycles                                     */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .text-gradient {
-  background: linear-gradient(135deg, #4a7cff 0%, #8b5cf6 50%, #00e5ff 100%);
+  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 50%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-accent {
-  background: linear-gradient(135deg, #ffd700 0%, #ffb000 50%, #ff8c00 100%);
+  background: linear-gradient(135deg, #ff00ff 0%, #ffb000 50%, #ff3366 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ─── Glass Card ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  GLASS / HOLOGRAPHIC CARD — frosted with neon border                   */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(26, 26, 48, 0.8), rgba(18, 18, 42, 0.9));
+  background: linear-gradient(135deg, rgba(28, 28, 46, 0.6), rgba(18, 18, 26, 0.85));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(74, 124, 255, 0.1);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 255, 136, 0.08);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 300ms ease;
 }
 
 .glass-card:hover {
-  border-color: rgba(74, 124, 255, 0.25);
+  border-color: rgba(0, 255, 136, 0.2);
   box-shadow:
-    0 8px 32px rgba(74, 124, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 8px 32px rgba(0, 255, 136, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* ─── Kanban Mockup ─────────────────────────────────────── */
+/* ─── Holographic variant ───────────────────────────────────────────── */
+
+.glass-card-holographic {
+  background: rgba(28, 28, 46, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 255, 136, 0.15);
+  box-shadow:
+    0 0 5px rgba(0, 255, 136, 0.1),
+    0 0 20px rgba(0, 255, 136, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  KANBAN MOCKUP (landing page)                                          */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .mockup-column {
-  background: rgba(13, 13, 26, 0.6);
-  border: 1px solid rgba(42, 42, 80, 0.5);
-  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.6);
+  border: 1px solid rgba(42, 42, 58, 0.5);
 }
 
 .mockup-card {
-  background: linear-gradient(135deg, rgba(26, 26, 48, 0.9), rgba(18, 18, 42, 0.95));
-  border: 1px solid rgba(42, 42, 80, 0.4);
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, rgba(28, 28, 46, 0.85), rgba(18, 18, 26, 0.9));
+  border: 1px solid rgba(42, 42, 58, 0.4);
+  transition: all 200ms ease;
 }
 
 .mockup-card:hover {
-  border-color: rgba(74, 124, 255, 0.3);
+  border-color: rgba(0, 255, 136, 0.2);
   transform: translateY(-1px);
 }
 
-/* ─── Hero Glow ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  HERO GLOW — radial gradient behind hero section                      */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .hero-glow {
   position: relative;
@@ -373,25 +719,16 @@ body {
   height: 200%;
   background: radial-gradient(
     circle at center,
-    rgba(74, 124, 255, 0.08) 0%,
+    rgba(0, 255, 136, 0.06) 0%,
     transparent 50%
   );
   pointer-events: none;
   animation: hero-glow-pulse 4s ease-in-out infinite;
 }
 
-@keyframes hero-glow-pulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-/* ─── Step Connector ─────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  STEP CONNECTOR (landing page)                                         */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .step-connector {
   position: relative;
@@ -404,14 +741,16 @@ body {
   right: -1.5rem;
   width: 1.5rem;
   height: 1px;
-  background: linear-gradient(90deg, rgba(74, 124, 255, 0.4), transparent);
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.3), transparent);
 }
 
 .step-connector:last-child::after {
   display: none;
 }
 
-/* ─── Feature Icon Glow ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  FEATURE ICON GLOW (landing page)                                      */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .feature-icon-glow {
   position: relative;
@@ -421,78 +760,27 @@ body {
   content: "";
   position: absolute;
   inset: -4px;
-  border-radius: 12px;
-  background: radial-gradient(circle at center, rgba(74, 124, 255, 0.15), transparent 70%);
+  background: radial-gradient(circle at center, rgba(0, 255, 136, 0.12), transparent 70%);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 300ms ease;
+  pointer-events: none;
 }
 
 .feature-icon-glow:hover::after {
   opacity: 1;
 }
 
-/* ─── Drag handle pulse (mobile onboarding) ──────────────── */
-
-@keyframes drag-pulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.5);
-  }
-}
-
-.animate-drag-pulse {
-  animation: drag-pulse 0.5s ease-in-out 3;
-}
-
-/* ─── High-DPI scale (1440p+) ────────────────────────────────────────── */
-/* Escala a fonte pixel em telas grandes para melhor legibilidade */
-
-@media (min-width: 1920px) {
-  .font-pixel.text-\[7px\] {
-    font-size: 8.5px;
-  }
-  .font-pixel.text-\[8px\] {
-    font-size: 9.5px;
-  }
-  .font-pixel.text-\[9px\] {
-    font-size: 11px;
-  }
-  .font-pixel.text-\[10px\] {
-    font-size: 12px;
-  }
-  .font-pixel.text-\[11px\] {
-    font-size: 13px;
-  }
-  .font-pixel.text-sm {
-    font-size: 15px;
-  }
-  .font-pixel.text-base {
-    font-size: 17px;
-  }
-  .font-pixel.text-lg {
-    font-size: 19px;
-  }
-  .font-pixel.text-xl {
-    font-size: 22px;
-  }
-  .font-pixel.text-2xl {
-    font-size: 26px;
-  }
-}
-
-/* ─── Scrollbar customizada (retro) ───────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  SCROLLBAR — tech-style thin scrollbar                                */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgba(58, 58, 106, 0.5) transparent;
+  scrollbar-color: rgba(42, 42, 58, 0.6) transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -500,10 +788,71 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(58, 58, 106, 0.5);
+  background-color: rgba(42, 42, 58, 0.6);
   border-radius: 0;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(58, 58, 106, 0.8);
+  background-color: rgba(0, 255, 136, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  TYPOGRAPHY SCALING                                                    */
+/*  Aumenta todos os tamanhos .font-pixel em +4px para leitura confortável*/
+/*  Escala adicional em telas grandes (1440p+)                           */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+/* Universal scaling: bump ALL font-pixel sizes by +4px */
+.font-pixel.text-\[6px\] { font-size: 10px; }
+.font-pixel.text-\[7px\] { font-size: 11px; }
+.font-pixel.text-\[8px\] { font-size: 12px; }
+.font-pixel.text-\[9px\] { font-size: 13px; }
+.font-pixel.text-\[10px\] { font-size: 14px; }
+.font-pixel.text-\[11px\] { font-size: 15px; }
+
+/* Semantic Tailwind sizes — agora com scaling universal (antes só em 1920p+) */
+.font-pixel.text-xs { font-size: 13px; }    /* xs=12px → 13px */
+.font-pixel.text-sm { font-size: 15px; }    /* sm=14px → 15px */
+.font-pixel.text-base { font-size: 17px; }   /* base=16px → 17px */
+.font-pixel.text-lg { font-size: 19px; }     /* lg=18px → 19px */
+.font-pixel.text-xl { font-size: 22px; }     /* xl=20px → 22px */
+.font-pixel.text-2xl { font-size: 26px; }    /* 2xl=24px → 26px */
+.font-pixel.text-3xl { font-size: 30px; }    /* 3xl=30px (consistente) */
+
+/* High-DPI (1440p+) — escala adicional sobre a base já aumentada */
+@media (min-width: 1920px) {
+  .font-pixel.text-\[7px\] { font-size: 12px; }
+  .font-pixel.text-\[8px\] { font-size: 13px; }
+  .font-pixel.text-\[9px\] { font-size: 14px; }
+  .font-pixel.text-\[10px\] { font-size: 15px; }
+  .font-pixel.text-\[11px\] { font-size: 16px; }
+  .font-pixel.text-xs { font-size: 14px; }
+  .font-pixel.text-sm { font-size: 16px; }
+  .font-pixel.text-base { font-size: 18px; }
+  .font-pixel.text-lg { font-size: 20px; }
+  .font-pixel.text-xl { font-size: 24px; }
+  .font-pixel.text-2xl { font-size: 28px; }
+  .font-pixel.text-3xl { font-size: 32px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  REDUCED MOTION — respects user preference                             */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-glitch,
+  .animate-rgb-shift,
+  .cyber-glitch::before,
+  .cyber-glitch::after,
+  .scanline-beam::after {
+    animation: none !important;
+  }
+
+  .cyber-glitch {
+    animation: none !important;
+  }
+
+  .hero-glow::before {
+    animation: none !important;
+  }
 }

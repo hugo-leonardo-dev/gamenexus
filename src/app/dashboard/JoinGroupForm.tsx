@@ -48,9 +48,12 @@ export function JoinGroupForm() {
 
   return (
     <div className="pixel-card p-4">
-      <h3 className="font-pixel text-[9px] text-retro-amber mb-3 uppercase tracking-wider">
-        ★ Entrar com Código
-      </h3>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="font-pixel text-[9px] text-retro-amber/60">$</span>
+        <h3 className="font-pixel text-[9px] text-retro-amber uppercase tracking-wider">
+          ENTRAR COM CÓDIGO
+        </h3>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <input
@@ -71,7 +74,7 @@ export function JoinGroupForm() {
         <button
           type="submit"
           disabled={loading || !code.trim()}
-          className="pixel-btn flex w-full items-center justify-center gap-2 bg-retro-amber px-4 py-2.5 text-[9px] text-black disabled:opacity-40"
+          className="pixel-btn flex w-full items-center justify-center gap-2 px-4 py-2.5 text-[9px] disabled:opacity-40"
         >
           {loading ? (
             <svg
@@ -110,8 +113,8 @@ export function JoinGroupForm() {
           )}
           {loading ? "Entrando..." : "Entrar no Grupo"}
         </button>
-        {error && <p className="text-xs text-red-400" role="alert">{error}</p>}
-        {success && <p className="text-xs text-emerald-400">{success}</p>}
+        {error && <p className="font-pixel text-[7px] text-retro-red" role="alert">{error}</p>}
+        {success && <p className="font-pixel text-[7px] text-retro-green">{success}</p>}
       </form>
     </div>
   );

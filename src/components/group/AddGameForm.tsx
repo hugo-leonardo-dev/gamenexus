@@ -20,9 +20,6 @@ export function AddGameForm({ groupId }: AddGameFormProps) {
         </span>
       </div>
       <GameSearchInput groupId={groupId} />
-      <p className="mt-2 font-pixel text-[7px] text-retro-text-dim">
-        DIGITE O NOME DO JOGO PARA BUSCAR, OU COLE UM LINK DA STEAM
-      </p>
     </div>
   );
 }
