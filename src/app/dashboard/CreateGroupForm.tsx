@@ -47,28 +47,33 @@ export function CreateGroupForm() {
 
   return (
     <div className="pixel-card p-4">
-      <h3 className="font-pixel text-[9px] text-retro-primary mb-3 uppercase tracking-wider">
-        ★ Criar Novo Grupo
-      </h3>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="font-pixel text-[9px] text-retro-primary/60">$</span>
+        <h3 className="font-pixel text-[9px] text-retro-primary uppercase tracking-wider">
+          CRIAR GRUPO
+        </h3>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          ref={inputRef}
-          type="text"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            if (error) setError("");
-          }}
-          placeholder="Nome do grupo"
-          maxLength={VALIDATIONS.groupName.max}
-          className="retro-input w-full px-3 py-2 text-sm"
-          aria-label="Nome do novo grupo"
-          autoComplete="off"
-        />
+        <div className="retro-input-wrapper">
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (error) setError("");
+            }}
+            placeholder="Nome do grupo"
+            maxLength={VALIDATIONS.groupName.max}
+            className="retro-input w-full px-3 py-2 text-sm"
+            aria-label="Nome do novo grupo"
+            autoComplete="off"
+          />
+        </div>
         <button
           type="submit"
           disabled={loading || !name.trim()}
-          className="pixel-btn flex w-full items-center justify-center gap-2 bg-retro-primary px-4 py-2.5 text-[9px] text-white disabled:opacity-40"
+          className="pixel-btn flex w-full items-center justify-center gap-2 px-4 py-2.5 text-[9px] disabled:opacity-40"
         >
           {loading ? (
             <svg
@@ -108,7 +113,7 @@ export function CreateGroupForm() {
           {loading ? "Criando..." : "Criar Grupo"}
         </button>
         {error && (
-          <p className="text-xs text-red-400" role="alert">{error}</p>
+          <p className="font-pixel text-[7px] text-retro-red" role="alert">{error}</p>
         )}
       </form>
     </div>

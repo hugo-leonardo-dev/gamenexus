@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,49 +9,73 @@ import { usePathname } from "next/navigation";
 export function DashboardHeader() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const [groupName, setGroupName] = useState<string | null>(null);
 
-  // Extrai o nome da página atual para o breadcrumb
-  const pageTitle = (() => {
-    if (pathname === "/dashboard") return "Dashboard";
-    if (pathname.startsWith("/profile")) return "Perfil";
-    if (pathname.startsWith("/group/")) return "Grupo";
-    return "GameNexus";
-  })();
+  const isGroupPage = pathname.startsWith("/group/");
+  const isDashboard = pathname === "/dashboard";
+  const isProfile = pathname.startsWith("/profile");
+
+  // Busca o nome do grupo quando estiver em uma página de grupo
+  useEffect(() => {
+    if (!isGroupPage) {
+      setGroupName(null);
+      return;
+    }
+
+    const groupId = pathname.split("/")[2];
+    if (!groupId) return;
+
+    fetch(`/api/groups/${groupId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setGroupName(data?.group?.name ?? null))
+      .catch(() => setGroupName(null));
+  }, [isGroupPage, pathname]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-retro-border/20 bg-retro-bg/80 backdrop-blur-xl">
+      {/* Bottom neon accent */}
+      <div className="pointer-events-none absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-retro-primary/20 to-transparent" />
+
       <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Left: Page title + breadcrumb */}
-        <div className="flex items-center gap-3">
-          <span className="font-pixel text-sm tracking-wider text-retro-text">
-            {pageTitle}
-          </span>
-          <span className="hidden sm:inline font-pixel text-[7px] text-retro-text-dim">
-            / GameNexus
-          </span>
+        {/* Left: Navigation breadcrumb */}
+        <div className="flex items-center gap-2 font-pixel text-sm tracking-wider">
+          {isDashboard && (
+            <span className="text-retro-text">Dashboard</span>
+          )}
+
+          {isGroupPage && (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-retro-text-dim/70 transition-colors hover:text-retro-primary"
+              >
+                Grupos
+              </Link>
+              <span className="text-retro-text-dim/30">▸</span>
+              <span className="text-retro-text truncate max-w-[200px]">
+                {groupName ?? "..."}
+              </span>
+            </>
+          )}
+
+          {isProfile && (
+            <span className="text-retro-text">Perfil</span>
+          )}
+
+          {!isDashboard && !isGroupPage && !isProfile && (
+            <span className="text-retro-text">GameNexus</span>
+          )}
         </div>
 
         {/* Right: User area */}
         <div className="flex items-center gap-4">
-          {/* Notification bell (visual only) */}
-          <button
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-retro-text-dim transition-all hover:bg-retro-surface-hover"
-            title="Notificações (em breve)"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-            </svg>
-            {/* Notification dot */}
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-retro-primary" />
-          </button>
-
           {/* User avatar + name */}
           {session?.user && (
             <Link
               href="/profile"
-              className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all hover:bg-retro-surface-hover"
+              className="group/avatar cyber-chamfer-sm flex items-center gap-2.5 px-2 py-1.5 transition-all hover:bg-retro-surface-hover"
             >
-              <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-md ring-1 ring-retro-border/50">
+              <div className="relative h-7 w-7 shrink-0 overflow-hidden pixel-border-sm transition-all group-hover/avatar:border-retro-primary/40">
                 {session.user.image ? (
                   <Image
                     src={session.user.image}
@@ -65,7 +90,7 @@ export function DashboardHeader() {
                   </div>
                 )}
               </div>
-              <span className="hidden font-pixel text-[9px] text-retro-text md:block">
+              <span className="hidden font-pixel text-[9px] text-retro-text transition-all group-hover/avatar:text-retro-primary group-hover/avatar:cyber-text-glow md:block">
                 {session.user.name}
               </span>
             </Link>

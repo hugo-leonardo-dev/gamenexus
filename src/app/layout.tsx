@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, Geist, Geist_Mono } from "next/font/google";
+import { Orbitron, Share_Tech_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/ui/SessionProvider";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { AppShell } from "@/components/layout/AppShell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// ─── Cyberpunk Fonts ─────────────────────────────────────────────────────
+
+const orbitron = Orbitron({
+  variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const pressStart2P = Press_Start_2P({
+const shareTechMono = Share_Tech_Mono({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-pixel",
@@ -40,9 +44,9 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} h-full antialiased`}
+      className={`${orbitron.variable} ${jetbrainsMono.variable} ${shareTechMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-retro-bg font-sans text-retro-text">
+      <body className="min-h-full bg-retro-bg font-mono text-retro-text">
         <SessionProvider>
           <ToastProvider>
             {/* Scanline overlay */}

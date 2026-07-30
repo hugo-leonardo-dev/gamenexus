@@ -4,8 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { KanbanBoard } from "@/components/game/KanbanBoard";
 import { AddGameForm } from "@/components/group/AddGameForm";
 import { CopyInviteButton } from "./CopyInviteButton";
-import { MemberList } from "@/components/group/MemberList";
 import { ManageGroupButton } from "@/components/group/ManageGroupButton";
+
 import type { Metadata } from "next";
 
 interface GroupPageProps {
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: GroupPageProps): Promise<Meta
     select: { name: true },
   });
   return {
-    title: group?.name ?? "Grupo",
+    title: group?.name ? `Grupo / ${group.name}` : "Grupo",
   };
 }
 
@@ -98,23 +98,28 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
   ).length;
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] flex-1 px-6 py-8 sm:px-8 lg:px-10 xl:px-12">
+    <div className="mx-auto w-full flex-1 px-6 py-8 sm:px-8 lg:px-12 xl:px-16">
       {/* Header do Grupo */}
       <div className="mb-6 pixel-card p-5 sm:p-6 animate-float-up">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Neon header accent */}
+        <div className="pointer-events-none absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-retro-primary/30 to-transparent" />
+
+<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-1 bg-retro-primary" />
-              <h1 className="font-pixel text-sm sm:text-base tracking-wider text-retro-text truncate">
+              <div className="h-8 w-0.5 bg-retro-primary cyber-glow-sm" />
+              <h1 className="font-pixel text-sm sm:text-base tracking-wider text-retro-text truncate cyber-text-glow">
                 {group.name}
               </h1>
               {isOwner && (
-                <span className="pixel-badge bg-retro-primary/20 text-retro-primary pixel-border-sm">
+                <span className="pixel-badge bg-retro-primary/15 text-retro-primary pixel-border-sm">
                   ★ DONO
                 </span>
               )}
             </div>
             <p className="mt-2 font-pixel text-[8px] text-retro-text-dim ml-4">
+              <span className="text-retro-primary/60">$</span>
+              {' '}
               {group._count.members} MEMBRO{group._count.members !== 1 ? "S" : ""}
               {' ▸ '}
               {group._count.games} JOGO{group._count.games !== 1 ? "S" : ""}
@@ -134,13 +139,10 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
           </div>
         </div>
 
-        <MemberList
-          members={group.members}
-          currentUserId={session.user.id ?? ""}
-        />
       </div>
 
       {/* Input para adicionar jogo */}
+
       <div className="relative mb-8">
         <AddGameForm groupId={groupId} />
       </div>

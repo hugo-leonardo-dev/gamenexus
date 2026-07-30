@@ -1,11 +1,53 @@
 import { prisma } from "@/lib/prisma";
 import { deleteGroup } from "@/lib/groups";
-import { apiSuccess, apiError, handleApiError, requireAuth } from "@/lib/api-utils";
+import { apiSuccess, apiError, handleApiError, requireAuth, requireMembership } from "@/lib/api-utils";
 import { logger } from "@/lib/logger";
 import { VALIDATIONS } from "@/lib/types";
 
 interface RouteParams {
   params: Promise<{ groupId: string }>;
+}
+
+/**
+ * GET /api/groups/[groupId]
+ *
+ * Retorna informações básicas do grupo (nome).
+ * Requer:
+ * - Usuário autenticado
+ * - Ser membro do grupo
+ */
+export async function GET(request: Request, { params }: RouteParams) {
+  try {
+    const userId = await requireAuth();
+    const { groupId } = await params;
+
+    if (!groupId) {
+      return apiError("ID do grupo é obrigatório.", "VALIDATION_ERROR");
+    }
+
+    // Verifica se o usuário é membro
+    await requireMembership(userId, groupId);
+
+    const group = await prisma.group.findUnique({
+      where: { id: groupId },
+      select: {
+        id: true,
+        name: true,
+        inviteCode: true,
+        _count: {
+          select: { members: true, games: true },
+        },
+      },
+    });
+
+    if (!group) {
+      return apiError("Grupo não encontrado.", "NOT_FOUND");
+    }
+
+    return apiSuccess({ group });
+  } catch (error: any) {
+    return handleApiError(error, "api/groups/[groupId] GET");
+  }
 }
 
 /**

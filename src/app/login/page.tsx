@@ -44,7 +44,7 @@ export default function LoginPage() {
         <div className="pixel-card p-8">
           {/* Logo */}
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center pixel-border-glow animate-glow-pulse" style={{background: 'linear-gradient(135deg, #1a1a30, #0d0d1a)'}}>
+            <div            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center pixel-border-glow animate-glow-pulse" style={{background: 'linear-gradient(135deg, #1c1c2e, #0a0a0f)'}}>
               <span className="font-pixel text-lg text-retro-primary">GN</span>
             </div>
             <h1 className="font-pixel text-base tracking-wider text-retro-text mb-1">
@@ -69,9 +69,9 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-retro-border" />
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-retro-border to-transparent" />
             <span className="font-pixel text-[7px] text-retro-text-dim">OU</span>
-            <div className="h-px flex-1 bg-retro-border" />
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-retro-border to-transparent" />
           </div>
 
           {/* Email Login */}
@@ -98,7 +98,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="border-2 border-retro-red/50 bg-retro-red/10 px-4 py-2.5 text-center">
+              <div className="border border-retro-red/30 bg-retro-red/5 px-4 py-2.5 text-center">
                 <p className="font-pixel text-[8px] text-retro-red">{error}</p>
               </div>
             )}
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="pixel-btn flex w-full items-center justify-center gap-2 bg-retro-surface px-6 py-3 text-[9px] text-retro-text border-2 border-retro-border disabled:opacity-40"
+              className="pixel-btn flex w-full items-center justify-center gap-2 px-6 py-3 text-[9px] disabled:opacity-40"
             >
               {loading ? (
                 <>
@@ -129,7 +129,7 @@ export default function LoginPage() {
             </span>
             <Link
               href="/signup"
-              className="font-pixel text-[7px] text-retro-primary hover:text-retro-accent transition-colors"
+              className="font-pixel text-[7px] text-retro-primary hover:text-retro-accent transition-colors cyber-text-glow"
             >
               CRIAR CONTA
             </Link>

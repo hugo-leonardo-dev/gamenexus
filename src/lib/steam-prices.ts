@@ -1,83 +1,170 @@
 import { prisma } from "./prisma";
 import { fetchCurrentPlayers } from "./steam";
 
-interface SteamPriceData {
-  [appId: string]: {
-    success: boolean;
-    data?: {
-      is_free: boolean;
-      price_overview?: {
-        currency: string;
-        initial: number;
-        final: number;
-        discount_percent: number;
-      };
-    };
-  };
-}
-
-interface PriceUpdate {
+interface PriceResult {
   steamAppId: string;
   currentPrice: number | null;
   originalPrice: number | null;
   discountPercent: number;
 }
 
-async function fetchBatchPrices(
-  appIds: string[]
-): Promise<PriceUpdate[]> {
-  const ids = appIds.join(",");
-  const url = `https://store.steampowered.com/api/appdetails?appids=${ids}&cc=br&l=portuguese`;
+// ─── Utilitários ──────────────────────────────────────────────────────
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "GameNexusApp/1.0 (cron job de atualização de preços)",
-    },
-    signal: AbortSignal.timeout(15000),
-  });
+/** Pausa por N ms */
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-  if (!response.ok) {
-    throw new Error(`Steam API respondeu com status ${response.status}`);
+/** Extrai preço do JSON da Steam, ou null se o jogo não for encontrado */
+function extractPriceFromResponse(
+  appId: string,
+  data: Record<string, any>
+): PriceResult | null {
+  const game = data[appId];
+  if (!game?.success || !game.data) return null;
+
+  const info = game.data;
+
+  if (info.is_free) {
+    return { steamAppId: appId, currentPrice: 0, originalPrice: 0, discountPercent: 0 };
   }
 
-  const data: SteamPriceData = await response.json();
+  if (info.price_overview) {
+    return {
+      steamAppId: appId,
+      currentPrice: info.price_overview.final,
+      originalPrice: info.price_overview.initial,
+      discountPercent: info.price_overview.discount_percent,
+    };
+  }
 
-  const results: PriceUpdate[] = [];
+  return null;
+}
+
+// ─── Busca individual (fallback) ──────────────────────────────────────
+
+/**
+ * Busca preço de UM appId na Steam.
+ * Retorna null em vez de lançar erro (tolerante a falhas).
+ */
+async function fetchSinglePrice(appId: string): Promise<PriceResult | null> {
+  try {
+    const response = await fetch(
+      `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=br&l=portuguese`,
+      {
+        headers: { "User-Agent": "GameNexusApp/1.0 (cron job de preços)" },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return extractPriceFromResponse(appId, data);
+  } catch {
+    return null;
+  }
+}
+
+// ─── Busca em batch (tentativa principal) ────────────────────────────
+
+/**
+ * Busca preços de VÁRIOS appIds em UMA chamada.
+ * Retorna um mapa { appId → PriceResult | null }.
+ * Se a Steam rejeitar o lote (HTTP 400), joga um erro específico
+ * para que o caller decida se faz fallback individual.
+ */
+async function fetchBatchPrices(
+  appIds: string[]
+): Promise<Map<string, PriceResult | null>> {
+  const ids = appIds.join(",");
+
+  const response = await fetch(
+    `https://store.steampowered.com/api/appdetails?appids=${ids}&cc=br&l=portuguese`,
+    {
+      headers: { "User-Agent": "GameNexusApp/1.0 (cron job de preços)" },
+      signal: AbortSignal.timeout(15000),
+    }
+  );
+
+  // Se a Steam rejeitou o lote, sinaliza fallback
+  if (!response.ok) {
+    throw new Error("BATCH_REJECTED");
+  }
+
+  const data = await response.json();
+  const results = new Map<string, PriceResult | null>();
 
   for (const appId of appIds) {
-    const game = data[appId];
-
-    // Se a Steam não retornou dados do jogo, pula (mantém preços antigos)
-    if (!game?.success || !game.data) {
-      continue;
-    }
-
-    const info = game.data;
-
-    if (info.is_free) {
-      results.push({
-        steamAppId: appId,
-        currentPrice: 0,
-        originalPrice: 0,
-        discountPercent: 0,
-      });
-    } else if (info.price_overview) {
-      results.push({
-        steamAppId: appId,
-        currentPrice: info.price_overview.final,
-        originalPrice: info.price_overview.initial,
-        discountPercent: info.price_overview.discount_percent,
-      });
-    }
-    // Se não tem preço e não é free, pula (jogo pode não estar disponível na região)
+    results.set(appId, extractPriceFromResponse(appId, data));
   }
 
   return results;
 }
 
+// ─── Estratégia híbrida ──────────────────────────────────────────────
+
+/**
+ * Tenta buscar preços em lote. Se o lote for rejeitado (400),
+ * cai para busca individual de cada appId — isolando os inválidos.
+ *
+ * Isso dá performance de batch quando tudo está ok, e resiliência
+ * individual quando algum appId específico dá problema.
+ */
+async function fetchPricesWithFallback(
+  batch: string[]
+): Promise<Map<string, PriceResult | null>> {
+  // Tentativa 1: batch
+  try {
+    return await fetchBatchPrices(batch);
+  } catch {
+    // Batch rejeitado — fallback: busca cada um individualmente
+  }
+
+  const results = new Map<string, PriceResult | null>();
+
+  for (const appId of batch) {
+    const price = await fetchSinglePrice(appId);
+    results.set(appId, price);
+    // Delay pequeno entre individuais para não floodar a Steam
+    await delay(200);
+  }
+
+  return results;
+}
+
+// ─── Persistência no banco ──────────────────────────────────────────
+
+async function persistPrice(
+  price: PriceResult
+): Promise<{ updated: boolean; error?: string }> {
+  try {
+    // Jogadores atuais (não crítico — falha silenciosa)
+    let currentPlayers: number | null = null;
+    try {
+      currentPlayers = await fetchCurrentPlayers(price.steamAppId);
+    } catch {}
+
+    await prisma.game.updateMany({
+      where: { steamAppId: price.steamAppId },
+      data: {
+        currentPrice: price.currentPrice,
+        originalPrice: price.originalPrice,
+        discountPercent: price.discountPercent,
+        ...(currentPlayers !== null ? { currentPlayers } : {}),
+      },
+    });
+    return { updated: true };
+  } catch (err: any) {
+    return { updated: false, error: err.message };
+  }
+}
+
+// ─── Função principal ────────────────────────────────────────────────
+
 /**
  * Atualiza os preços de todos os jogos cadastrados.
- * Agrupa os appIds em lotes de 10 para evitar sobrecarga na Steam API.
+ *
+ * Estratégia híbrida:
+ * 1. Tenta batch de 10 appIds por vez
+ * 2. Se um lote falha com 400, busca cada appId individualmente
+ * 3. Isso garante performance em escala E resiliência contra IDs inválidos
  */
 export async function updateAllGamePrices(): Promise<{
   totalUniqueGames: number;
@@ -103,49 +190,33 @@ export async function updateAllGamePrices(): Promise<{
   }
 
   const BATCH_SIZE = 10;
-  const batches: string[][] = [];
   for (let i = 0; i < allAppIds.length; i += BATCH_SIZE) {
-    batches.push(allAppIds.slice(i, i + BATCH_SIZE));
-  }
+    const batch = allAppIds.slice(i, i + BATCH_SIZE);
 
-  for (const batch of batches) {
-    try {
-      const prices = await fetchBatchPrices(batch);
+    // Híbrido: tenta batch, fallback individual se falhar
+    const results = await fetchPricesWithFallback(batch);
 
-      // Conta quantos foram pulados (Steam não retornou dados)
-      totalSkipped += batch.length - prices.length;
+    for (const appId of batch) {
+      const price = results.get(appId);
 
-      for (const price of prices) {
-        try {
-          // Busca jogadores atuais (não crítico — falha silenciosa)
-          let currentPlayers: number | null = null;
-          try {
-            currentPlayers = await fetchCurrentPlayers(price.steamAppId);
-          } catch {}
-
-          await prisma.game.updateMany({
-            where: { steamAppId: price.steamAppId },
-            data: {
-              currentPrice: price.currentPrice,
-              originalPrice: price.originalPrice,
-              discountPercent: price.discountPercent,
-              ...(currentPlayers !== null ? { currentPlayers } : {}),
-            },
-          });
-          totalUpdated++;
-        } catch (err: any) {
-          totalErrors++;
-          errors.push(`Erro ao atualizar ${price.steamAppId}: ${err.message}`);
-        }
+      if (!price) {
+        totalSkipped++;
+        continue;
       }
 
-      // Pequena pausa entre lotes
-      if (batches.length > 1) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+      const { updated, error } = await persistPrice(price);
+
+      if (updated) {
+        totalUpdated++;
+      } else {
+        totalErrors++;
+        errors.push(`Erro ao atualizar ${appId}: ${error ?? "desconhecido"}`);
       }
-    } catch (err: any) {
-      totalErrors += batch.length;
-      errors.push(`Erro no lote [${batch.join(", ")}]: ${err.message}`);
+    }
+
+    // Delay entre lotes para não sobrecarregar a Steam
+    if (i + BATCH_SIZE < allAppIds.length) {
+      await delay(500);
     }
   }
 
