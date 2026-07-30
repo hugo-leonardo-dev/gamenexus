@@ -50,7 +50,7 @@ async function fetchSinglePrice(appId: string): Promise<PriceResult | null> {
     const response = await fetch(
       `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=br&l=portuguese`,
       {
-        headers: { "User-Agent": "GameNexusApp/1.0 (cron job de preços)" },
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
         signal: AbortSignal.timeout(10000),
       }
     );
@@ -78,7 +78,7 @@ async function fetchBatchPrices(
   const response = await fetch(
     `https://store.steampowered.com/api/appdetails?appids=${ids}&cc=br&l=portuguese`,
     {
-      headers: { "User-Agent": "GameNexusApp/1.0 (cron job de preços)" },
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
       signal: AbortSignal.timeout(15000),
     }
   );
