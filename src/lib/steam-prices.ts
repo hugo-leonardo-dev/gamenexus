@@ -39,94 +39,72 @@ function extractPriceFromResponse(
   return null;
 }
 
-// ─── Busca individual (fallback) ──────────────────────────────────────
+// ─── Busca individual de preço ──────────────────────────────────────
 
 /**
  * Busca preço de UM appId na Steam.
  * Retorna null em vez de lançar erro (tolerante a falhas).
+ * Log detalhado pra debug da primeira requisição.
  */
+let _debugLogged = false;
+
 async function fetchSinglePrice(appId: string): Promise<PriceResult | null> {
   try {
     const response = await fetch(
-      `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=br&l=portuguese`,
+      `https://store.steampowered.com/api/appdetails?appids=${appId}&cc=br`,
       {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
         signal: AbortSignal.timeout(10000),
       }
     );
-    if (!response.ok) return null;
+
+    if (!response.ok) {
+      if (!_debugLogged) {
+        console.log(`[steam-prices] fetchSinglePrice(${appId}) HTTP ${response.status}`);
+        _debugLogged = true;
+      }
+      return null;
+    }
+
     const data = await response.json();
-    return extractPriceFromResponse(appId, data);
-  } catch {
+    const result = extractPriceFromResponse(appId, data);
+
+    if (!_debugLogged) {
+      console.log(`[steam-prices] fetchSinglePrice(${appId}) OK result=${result !== null ? "tem_preco" : "sem_preco"}`);
+      _debugLogged = true;
+    }
+
+    return result;
+  } catch (err: any) {
+    if (!_debugLogged) {
+      console.log(`[steam-prices] fetchSinglePrice(${appId}) EXCEPTION: ${err.message}`);
+      _debugLogged = true;
+    }
     return null;
   }
 }
 
-// ─── Busca em batch (tentativa principal) ────────────────────────────
+// ─── Busca em lote (paralela) ────────────────────────────────────────
 
 /**
- * Busca preços de VÁRIOS appIds em UMA chamada.
- * Retorna um mapa { appId → PriceResult | null }.
- * Se a Steam rejeitar o lote (HTTP 400), joga um erro específico
- * para que o caller decida se faz fallback individual.
+ * Busca preços de VÁRIOS appIds em PARALELO (sem batch Steam).
+ * A Steam rejeita lotes da Vercel (HTTP 400), então cada requisição
+ * é individual mas executada concorrentemente (Promise.all).
  */
-async function fetchBatchPrices(
-  appIds: string[]
-): Promise<Map<string, PriceResult | null>> {
-  const ids = appIds.join(",");
-
-  const response = await fetch(
-    `https://store.steampowered.com/api/appdetails?appids=${ids}&cc=br&l=portuguese`,
-    {
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
-      signal: AbortSignal.timeout(15000),
-    }
+async function fetchPricesParallel(batch: string[]): Promise<Map<string, PriceResult | null>> {
+  const results = await Promise.all(
+    batch.map(async (appId) => {
+      const price = await fetchSinglePrice(appId);
+      return [appId, price] as const;
+    })
   );
 
-  // Se a Steam rejeitou o lote, sinaliza fallback
-  if (!response.ok) {
-    throw new Error("BATCH_REJECTED");
+  const map = new Map<string, PriceResult | null>();
+  for (const [appId, price] of results) {
+    map.set(appId, price);
   }
 
-  const data = await response.json();
-  const results = new Map<string, PriceResult | null>();
-
-  for (const appId of appIds) {
-    results.set(appId, extractPriceFromResponse(appId, data));
-  }
-
-  return results;
-}
-
-// ─── Estratégia híbrida ──────────────────────────────────────────────
-
-/**
- * Tenta buscar preços em lote. Se o lote for rejeitado (400),
- * cai para busca individual de cada appId — isolando os inválidos.
- *
- * Isso dá performance de batch quando tudo está ok, e resiliência
- * individual quando algum appId específico dá problema.
- */
-async function fetchPricesWithFallback(
-  batch: string[]
-): Promise<Map<string, PriceResult | null>> {
-  // Tentativa 1: batch
-  try {
-    return await fetchBatchPrices(batch);
-  } catch {
-    // Batch rejeitado — fallback: busca cada um individualmente
-  }
-
-  const results = new Map<string, PriceResult | null>();
-
-  for (const appId of batch) {
-    const price = await fetchSinglePrice(appId);
-    results.set(appId, price);
-    // Delay pequeno entre individuais para não floodar a Steam
-    await delay(200);
-  }
-
-  return results;
+  return map;
 }
 
 // ─── Persistência no banco ──────────────────────────────────────────
@@ -215,11 +193,19 @@ export async function updateAllGamePrices(maxGames = 12): Promise<{
   }
 
   const BATCH_SIZE = 10;
+  // NOTA: Steam rejeita lotes (appids=a,b,c) da Vercel com HTTP 400.
+  // Por isso usamos fetchPricesParallel que busca cada appId
+  // individualmente, mas em paralelo (Promise.all).
   for (let i = 0; i < appIds.length; i += BATCH_SIZE) {
     const batch = appIds.slice(i, i + BATCH_SIZE);
 
-    // Híbrido: tenta batch, fallback individual se falhar
-    const results = await fetchPricesWithFallback(batch);
+    // Paralelo: busca cada appId individualmente, mas concorrente
+    const results = await fetchPricesParallel(batch);
+
+    // Delay entre lotes para não sobrecarregar a Steam
+    if (i + BATCH_SIZE < appIds.length) {
+      await delay(500);
+    }
 
     for (const appId of batch) {
       const price = results.get(appId);
