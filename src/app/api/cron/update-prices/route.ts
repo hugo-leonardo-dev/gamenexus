@@ -15,9 +15,15 @@ export async function GET(request: Request) {
       return apiError("Não autorizado", "UNAUTHORIZED");
     }
 
-    console.log("[cron/update-prices] Iniciando atualização de preços...");
+    const url = new URL(request.url);
+    const maxParam = url.searchParams.get("max");
+    const maxGames = maxParam
+      ? Math.max(1, Math.min(parseInt(maxParam, 10) || 12, 50))
+      : 12;
 
-    const result = await updateAllGamePrices();
+    console.log(`[cron/update-prices] Iniciando atualização de preços (max: ${maxGames})...`);
+
+    const result = await updateAllGamePrices(maxGames);
 
     console.log(
       `[cron/update-prices] Concluído: ${result.totalUpdated}/${result.totalUniqueGames} únicos, ${result.totalErrors} erros`

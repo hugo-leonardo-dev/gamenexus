@@ -159,39 +159,64 @@ async function persistPrice(
 // ─── Função principal ────────────────────────────────────────────────
 
 /**
- * Atualiza os preços de todos os jogos cadastrados.
+ * Atualiza os preços dos jogos em lotes parciais.
  *
- * Estratégia híbrida:
+ * Estratégia:
+ * - Processa APENAS os primeiros N jogos (maxGames), ordenados pelo
+ *   `updatedAt` mais antigo primeiro.
+ * - Isso garante que cada execução caiba dentro dos 10s do Vercel Hobby
+ *   e distribui as atualizações uniformemente entre todos os jogos.
+ * - Configure o cron-job.org para rodar a cada 15-30 minutos;
+ *   eventualmente todos os jogos serão atualizados.
+ *
+ * Híbrido por lote:
  * 1. Tenta batch de 10 appIds por vez
  * 2. Se um lote falha com 400, busca cada appId individualmente
- * 3. Isso garante performance em escala E resiliência contra IDs inválidos
+ * 3. Performance de batch + resiliência individual
  */
-export async function updateAllGamePrices(): Promise<{
+export async function updateAllGamePrices(maxGames = 12): Promise<{
   totalUniqueGames: number;
   totalUpdated: number;
   totalSkipped: number;
   totalErrors: number;
   errors: string[];
+  gamesProcessed: number;
+  gamesRemaining: number;
 }> {
-  const games = await prisma.game.findMany({
-    select: { steamAppId: true },
+  // Busca TODOS os appIds distintos para saber o total
+  const allGames = await prisma.game.findMany({
+    select: { steamAppId: true, updatedAt: true },
     distinct: ["steamAppId"],
+    orderBy: { updatedAt: "asc" }, // mais antigos primeiro
   });
 
-  const allAppIds = games.map((g) => g.steamAppId);
-  const totalUniqueGames = allAppIds.length;
+  const totalUniqueGames = allGames.length;
+
+  // Pega apenas os primeiros N que precisam ser atualizados
+  const batchToProcess = allGames.slice(0, maxGames);
+  const appIds = batchToProcess.map((g) => g.steamAppId);
+  const gamesRemaining = Math.max(0, totalUniqueGames - maxGames);
+
   let totalUpdated = 0;
   let totalSkipped = 0;
   let totalErrors = 0;
   const errors: string[] = [];
 
-  if (totalUniqueGames === 0) {
-    return { totalUniqueGames: 0, totalUpdated: 0, totalSkipped: 0, totalErrors: 0, errors: [] };
+  if (appIds.length === 0) {
+    return {
+      totalUniqueGames,
+      totalUpdated: 0,
+      totalSkipped: 0,
+      totalErrors: 0,
+      errors: [],
+      gamesProcessed: 0,
+      gamesRemaining,
+    };
   }
 
   const BATCH_SIZE = 10;
-  for (let i = 0; i < allAppIds.length; i += BATCH_SIZE) {
-    const batch = allAppIds.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < appIds.length; i += BATCH_SIZE) {
+    const batch = appIds.slice(i, i + BATCH_SIZE);
 
     // Híbrido: tenta batch, fallback individual se falhar
     const results = await fetchPricesWithFallback(batch);
@@ -215,10 +240,18 @@ export async function updateAllGamePrices(): Promise<{
     }
 
     // Delay entre lotes para não sobrecarregar a Steam
-    if (i + BATCH_SIZE < allAppIds.length) {
+    if (i + BATCH_SIZE < appIds.length) {
       await delay(500);
     }
   }
 
-  return { totalUniqueGames, totalUpdated, totalSkipped, totalErrors, errors };
+  return {
+    totalUniqueGames,
+    totalUpdated,
+    totalSkipped,
+    totalErrors,
+    errors,
+    gamesProcessed: appIds.length,
+    gamesRemaining,
+  };
 }
