@@ -44,10 +44,7 @@ function extractPriceFromResponse(
 /**
  * Busca preço de UM appId na Steam.
  * Retorna null em vez de lançar erro (tolerante a falhas).
- * Log detalhado pra debug da primeira requisição.
  */
-let _debugLogged = false;
-
 async function fetchSinglePrice(appId: string): Promise<PriceResult | null> {
   try {
     const response = await fetch(
@@ -58,28 +55,11 @@ async function fetchSinglePrice(appId: string): Promise<PriceResult | null> {
       }
     );
 
-    if (!response.ok) {
-      if (!_debugLogged) {
-        console.log(`[steam-prices] fetchSinglePrice(${appId}) HTTP ${response.status}`);
-        _debugLogged = true;
-      }
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
-    const result = extractPriceFromResponse(appId, data);
-
-    if (!_debugLogged) {
-      console.log(`[steam-prices] fetchSinglePrice(${appId}) OK result=${result !== null ? "tem_preco" : "sem_preco"}`);
-      _debugLogged = true;
-    }
-
-    return result;
-  } catch (err: any) {
-    if (!_debugLogged) {
-      console.log(`[steam-prices] fetchSinglePrice(${appId}) EXCEPTION: ${err.message}`);
-      _debugLogged = true;
-    }
+    return extractPriceFromResponse(appId, data);
+  } catch {
     return null;
   }
 }
