@@ -152,7 +152,7 @@ async function persistPrice(
  * 2. Se um lote falha com 400, busca cada appId individualmente
  * 3. Performance de batch + resiliência individual
  */
-export async function updateAllGamePrices(maxGames = 12): Promise<{
+export async function updateAllGamePrices(maxGames = 12, skipGames = 0): Promise<{
   totalUniqueGames: number;
   totalUpdated: number;
   totalSkipped: number;
@@ -170,10 +170,10 @@ export async function updateAllGamePrices(maxGames = 12): Promise<{
 
   const totalUniqueGames = allGames.length;
 
-  // Pega apenas os primeiros N que precisam ser atualizados
-  const batchToProcess = allGames.slice(0, maxGames);
+  // Aplica skip e limit em memória (93 jogos é irrelevante)
+  const batchToProcess = allGames.slice(skipGames, skipGames + maxGames);
   const appIds = batchToProcess.map((g) => g.steamAppId);
-  const gamesRemaining = Math.max(0, totalUniqueGames - maxGames);
+  const gamesRemaining = Math.max(0, totalUniqueGames - skipGames - maxGames);
 
   let totalUpdated = 0;
   let totalSkipped = 0;

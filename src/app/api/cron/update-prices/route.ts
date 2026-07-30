@@ -17,11 +17,15 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const maxParam = url.searchParams.get("max");
+    const skipParam = url.searchParams.get("skip");
     const maxGames = maxParam
       ? Math.max(1, Math.min(parseInt(maxParam, 10) || 12, 50))
       : 12;
+    const skipGames = skipParam
+      ? Math.max(0, parseInt(skipParam, 10) || 0)
+      : 0;
 
-    console.log(`[cron/update-prices] Iniciando atualização de preços (max: ${maxGames})...`);
+    console.log(`[cron/update-prices] Iniciando atualização de preços (max: ${maxGames}, skip: ${skipGames})...`);
 
     // ─── Diagnóstico detalhado da Steam API ──────────────────────
     // Testa 3 cenários: individual (funciona), batch (funciona?), dados reais
@@ -50,7 +54,7 @@ export async function GET(request: Request) {
       console.error(`[cron] DIAG: Steam fetch FAILED: ${err.message}`);
     }
 
-    const result = await updateAllGamePrices(maxGames);
+    const result = await updateAllGamePrices(maxGames, skipGames);
 
     console.log(
       `[cron/update-prices] Concluído: ${result.totalUpdated}/${result.totalUniqueGames} únicos, ${result.totalErrors} erros`
