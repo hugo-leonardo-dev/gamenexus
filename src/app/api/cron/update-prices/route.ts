@@ -23,6 +23,21 @@ export async function GET(request: Request) {
 
     console.log(`[cron/update-prices] Iniciando atualização de preços (max: ${maxGames})...`);
 
+    // ─── Diagnóstico: testa uma chamada Steam real ─────────────────
+    // Pra descobrir se a Steam está bloqueando o IP da Vercel ou
+    // se o problema é no parsing dos dados.
+    try {
+      const testUrl = "https://store.steampowered.com/api/appdetails?appids=570940&cc=br&l=portuguese";
+      const testResp = await fetch(testUrl, {
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+        signal: AbortSignal.timeout(5000),
+      });
+      const testBody = await testResp.text();
+      console.log(`[cron/update-prices] DIAG: Steam status=${testResp.status}, body(300 chars)=${testBody.slice(0, 300)}`);
+    } catch (err: any) {
+      console.error(`[cron/update-prices] DIAG: Steam fetch FAILED: ${err.message}`);
+    }
+
     const result = await updateAllGamePrices(maxGames);
 
     console.log(
