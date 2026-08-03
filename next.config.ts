@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
         hostname: "cdn.akamai.steamstatic.com",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "avatars.akamai.steamstatic.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.steamstatic.com",
+        pathname: "**",
+      },
     ],
   },
 

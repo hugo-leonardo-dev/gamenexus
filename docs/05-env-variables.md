@@ -36,6 +36,9 @@
 | 11 | `REDIS_URL` | ❌ Opcional | ❌ Não | `docker-compose.yml` | URL do Redis (cache) |
 | 12 | `HOSTNAME` | ❌ Opcional | ❌ Não | `docker-compose.yml` | Host bind (0.0.0.0 para Docker) |
 | 13 | `PORT` | ❌ Opcional | ❌ Não | `docker-compose.yml` | Porta do servidor (3000) |
+| 14 | `STEAM_API_KEY` | ⚠️ (login Steam) | ✅ Sim | `steam-profile.ts` | Chave Steam Web API (perfil público, backend apenas) |
+| 15 | `STEAM_OPENID_REALM` | ❌ Opcional | ❌ Não | `steam-auth.ts` | Realm OpenID enviado à Steam (padrão: NEXTAUTH_URL) |
+| 16 | `STEAM_OPENID_RETURN_URL` | ❌ Opcional | ❌ Não | `steam-auth.ts` | URL de retorno OpenID (padrão: {NEXTAUTH_URL}/api/auth/steam/callback) |
 
 ### 1.2 Classificação por Categoria
 
@@ -52,6 +55,14 @@ AUTH_DISCORD_ID=client_id
 AUTH_DISCORD_SECRET=client_secret
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=mesmo_do_AUTH_SECRET
+```
+
+#### Steam (login OpenID + perfil)
+```env
+STEAM_API_KEY=sua_steam_web_api_key
+# Opcionais (padrões derivados de NEXTAUTH_URL):
+# STEAM_OPENID_REALM=https://gamenexus.vercel.app
+# STEAM_OPENID_RETURN_URL=https://gamenexus.vercel.app/api/auth/steam/callback
 ```
 
 #### Cron

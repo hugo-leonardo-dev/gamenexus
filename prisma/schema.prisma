@@ -10,11 +10,19 @@ generator client {
 model User {
   id            String    @id @default(cuid())
   discordId     String?   @unique
+  steamId       String?   @unique
   name          String
   email         String?   @unique
   emailVerified DateTime?
   avatarUrl     String?
   passwordHash  String?
+
+  // Steam OpenID (login via Steam)
+  // SteamID64 armazenado como string (nunca number) para evitar perda de precisão.
+  steamName       String?
+  steamAvatarUrl  String?
+  steamProfileUrl String?
+  lastLoginAt     DateTime?
 
   memberships GroupMember[]
   gamesAdded  Game[]
