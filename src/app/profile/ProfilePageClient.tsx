@@ -8,12 +8,17 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
 import { ProfileCustomization } from "@/components/profile/ProfileCustomization";
 import { ProfileComingSoon } from "@/components/profile/ProfileComingSoon";
+import { SteamAccountSection } from "@/components/profile/SteamAccountSection";
 
 interface ProfilePageClientProps {
   name: string;
   email: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  steamId: string | null;
+  steamName: string | null;
+  steamAvatarUrl: string | null;
+  steamLinkedAt: string | null;
 }
 
 export function ProfilePageClient({
@@ -21,6 +26,10 @@ export function ProfilePageClient({
   email,
   avatarUrl: initialAvatar,
   createdAt,
+  steamId,
+  steamName,
+  steamAvatarUrl,
+  steamLinkedAt,
 }: ProfilePageClientProps) {
   const router = useRouter();
   const { update: updateSession } = useSession();
@@ -73,6 +82,16 @@ export function ProfilePageClient({
       {/* Personalização */}
       <div className="pixel-card p-6 sm:p-8">
         <ProfileCustomization currentName={initialName} />
+      </div>
+
+      {/* Contas Conectadas (Steam) */}
+      <div className="pixel-card p-6 sm:p-8">
+        <SteamAccountSection
+          steamId={steamId}
+          steamName={steamName}
+          steamAvatarUrl={steamAvatarUrl}
+          steamLinkedAt={steamLinkedAt}
+        />
       </div>
 
       {/* Backlog Público (Em Breve) */}

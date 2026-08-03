@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ProfilePageClient } from "./ProfilePageClient";
+import { SteamLinkNotice } from "@/components/profile/SteamLinkNotice";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -22,6 +24,10 @@ export default async function ProfilePage() {
       email: true,
       avatarUrl: true,
       createdAt: true,
+      steamId: true,
+      steamName: true,
+      steamAvatarUrl: true,
+      steamLinkedAt: true,
     },
   });
 
@@ -43,11 +49,20 @@ export default async function ProfilePage() {
         </p>
       </div>
 
+      {/* Aviso do fluxo de vinculação Steam (?error=steam_link_* / ?success=*) */}
+      <Suspense fallback={null}>
+        <SteamLinkNotice />
+      </Suspense>
+
       <ProfilePageClient
         name={user.name}
         email={user.email}
         avatarUrl={user.avatarUrl}
         createdAt={user.createdAt.toISOString()}
+        steamId={user.steamId}
+        steamName={user.steamName}
+        steamAvatarUrl={user.steamAvatarUrl}
+        steamLinkedAt={user.steamLinkedAt?.toISOString() ?? null}
       />
     </div>
   );

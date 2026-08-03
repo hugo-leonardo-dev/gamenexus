@@ -17,11 +17,13 @@ model User {
   avatarUrl     String?
   passwordHash  String?
 
-  // Steam OpenID (login via Steam)
+  // Steam OpenID (login via Steam / conta Steam vinculada)
   // SteamID64 armazenado como string (nunca number) para evitar perda de precisão.
+  // steamId é único (constraint no banco): um SteamID pertence a no máximo 1 usuário.
   steamName       String?
   steamAvatarUrl  String?
   steamProfileUrl String?
+  steamLinkedAt   DateTime? // quando o usuário vinculou a conta Steam ao perfil
   lastLoginAt     DateTime?
 
   memberships GroupMember[]

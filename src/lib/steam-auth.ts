@@ -53,17 +53,22 @@ export interface SteamAuthConfig {
 }
 
 /**
- * Centraliza a configuração do login Steam.
+ * Centraliza a configuração do fluxo Steam (login ou vinculação de conta).
  * As URLs críticas vêm de NEXTAUTH_URL/AUTH_URL (configuradas no ambiente),
  * nunca de headers de request — evita ataques baseados em Host spoofing.
+ *
+ * `returnToPath` permite reutilizar o mesmo protocolo OpenID com callbacks
+ * diferentes (login: /api/auth/steam/callback; vinculação: /api/steam/link/callback).
  */
-export function getSteamAuthConfig(): SteamAuthConfig {
+export function getSteamAuthConfig(
+  returnToPath = "/api/auth/steam/callback"
+): SteamAuthConfig {
   const base = (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "");
   if (!base) {
     throw new Error("[steam-auth] AUTH_URL/NEXTAUTH_URL é obrigatória para o login Steam.");
   }
   const realm = (process.env.STEAM_OPENID_REALM ?? base).replace(/\/+$/, "");
-  const returnTo = (process.env.STEAM_OPENID_RETURN_URL ?? `${base}/api/auth/steam/callback`).replace(/\/+$/, "");
+  const returnTo = (process.env.STEAM_OPENID_RETURN_URL ?? `${base}${returnToPath}`).replace(/\/+$/, "");
   return { appUrl: base, realm, returnTo };
 }
 
@@ -101,6 +106,32 @@ export function getSessionCookieAttributes(): {
 /** State anti-CSRF: 256 bits aleatórios, uso único, associado à sessão (cookie). */
 export function generateState(): string {
   return randomBytes(32).toString("hex");
+}
+
+/**
+ * State com binding: `<aleatório 64 hex>:<binding>`.
+ *
+ * Usado na vinculação de conta: o binding (userId) fica dentro do valor do
+ * cookie HttpOnly — o navegador não consegue ler/forjar — e é ecoado pela
+ * Steam no return_to. No callback, validamos que quem confirmou o fluxo é o
+ * mesmo usuário que o iniciou (mesmo se a sessão trocar no meio do caminho).
+ */
+export function generateStateWithBinding(binding: string): string {
+  return `${generateState()}:${binding}`;
+}
+
+/**
+ * Extrai o binding do state (ou null se malformado/forjado).
+ * Exige exatamente 64 hex aleatórios antes do separador — um state que não
+ * veio de generateStateWithBinding é rejeitado.
+ */
+export function parseStateBinding(state: string): string | null {
+  const idx = state.indexOf(":");
+  if (idx <= 0) return null;
+  const random = state.slice(0, idx);
+  const binding = state.slice(idx + 1);
+  if (!/^[0-9a-f]{64}$/.test(random) || !binding) return null;
+  return binding;
 }
 
 /** O state é embutido no return_to — a Steam ecoa o return_to exato no callback. */

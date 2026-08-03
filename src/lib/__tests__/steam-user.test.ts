@@ -39,6 +39,7 @@ const FAKE_USER: User = {
   steamName: PROFILE.displayName,
   steamAvatarUrl: PROFILE.avatarUrl,
   steamProfileUrl: PROFILE.profileUrl,
+  steamLinkedAt: null,
   lastLoginAt: new Date(),
   createdAt: new Date(),
 };
