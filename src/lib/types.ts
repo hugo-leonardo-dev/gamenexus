@@ -25,6 +25,7 @@ export type MemberRole = "OWNER" | "MEMBER";
 // ─── Game Card Data (o que vem da API) ──────────────────────────────────
 export interface GameCardData {
   id: string;
+  steamAppId: string;
   title: string;
   imageUrl: string;
   originalPrice: number | null;

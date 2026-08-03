@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ProfilePageClient } from "./ProfilePageClient";
 import { SteamLinkNotice } from "@/components/profile/SteamLinkNotice";
+import { getUserLibraryMeta } from "@/lib/steam-library";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -35,6 +36,9 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
+  // Meta da biblioteca Steam (contagem + última sync) para o card de contas
+  const library = await getUserLibraryMeta(session.user.id!);
+
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8 animate-float-up">
@@ -63,6 +67,8 @@ export default async function ProfilePage() {
         steamName={user.steamName}
         steamAvatarUrl={user.steamAvatarUrl}
         steamLinkedAt={user.steamLinkedAt?.toISOString() ?? null}
+        libraryOwnedCount={library.ownedCount}
+        libraryLastSyncAt={library.lastLibrarySyncAt?.toISOString() ?? null}
       />
     </div>
   );

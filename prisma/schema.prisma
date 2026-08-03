@@ -24,14 +24,37 @@ model User {
   steamAvatarUrl  String?
   steamProfileUrl String?
   steamLinkedAt   DateTime? // quando o usuário vinculou a conta Steam ao perfil
+  lastLibrarySyncAt DateTime? // última sincronização da biblioteca Steam (GetOwnedGames)
   lastLoginAt     DateTime?
 
-  memberships GroupMember[]
-  gamesAdded  Game[]
-  accounts    Account[]
-  sessions    Session[]
+  memberships    GroupMember[]
+  gamesAdded     Game[]
+  accounts       Account[]
+  sessions       Session[]
+  steamOwnedGames SteamOwnedGame[]
 
   createdAt DateTime @default(now())
+}
+
+// ─── Biblioteca Steam (GetOwnedGames) ─────────────────────────────────────
+// Jogos que o usuário possui na Steam, persistidos após sincronização.
+// Base para a tag "Já Possuo" no Kanban e para Estatísticas/Recomendações
+// futuras (playtimeForever já é armazenado por isso — a API devolve grátis).
+model SteamOwnedGame {
+  id              String    @id @default(cuid())
+  userId          String
+  steamAppId      String
+  // Minutos totais jogados (Steam) — reservado para Estatísticas futuras
+  playtimeForever Int       @default(0)
+  lastPlayedAt    DateTime?
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Um jogo não pode ser possuído 2x pelo mesmo usuário (anti-duplicação)
+  @@unique([userId, steamAppId])
+  // Lookup rápido: todos os jogos de um usuário
+  @@index([userId])
 }
 
 // ─── Grupos ────────────────────────────────────────────────────────────────

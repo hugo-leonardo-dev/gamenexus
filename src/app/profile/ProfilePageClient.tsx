@@ -19,6 +19,8 @@ interface ProfilePageClientProps {
   steamName: string | null;
   steamAvatarUrl: string | null;
   steamLinkedAt: string | null;
+  libraryOwnedCount: number | null;
+  libraryLastSyncAt: string | null;
 }
 
 export function ProfilePageClient({
@@ -30,6 +32,8 @@ export function ProfilePageClient({
   steamName,
   steamAvatarUrl,
   steamLinkedAt,
+  libraryOwnedCount,
+  libraryLastSyncAt,
 }: ProfilePageClientProps) {
   const router = useRouter();
   const { update: updateSession } = useSession();
@@ -91,6 +95,8 @@ export function ProfilePageClient({
           steamName={steamName}
           steamAvatarUrl={steamAvatarUrl}
           steamLinkedAt={steamLinkedAt}
+          libraryOwnedCount={libraryOwnedCount}
+          libraryLastSyncAt={libraryLastSyncAt}
         />
       </div>
 
