@@ -87,6 +87,11 @@ services:
       # Cron
       - CRON_SECRET=${CRON_SECRET}
 
+      # Steam (login OpenID + perfil)
+      - STEAM_API_KEY=${STEAM_API_KEY}
+      - STEAM_OPENID_REALM=${STEAM_OPENID_REALM:-}
+      - STEAM_OPENID_RETURN_URL=${STEAM_OPENID_RETURN_URL:-}
+
       # Runtime
       - NODE_ENV=production
       - HOSTNAME=0.0.0.0

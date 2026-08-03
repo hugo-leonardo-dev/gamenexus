@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import { getUserLibraryMeta } from "@/lib/steam-library";
 import { KanbanBoard } from "@/components/game/KanbanBoard";
 import { AddGameForm } from "@/components/group/AddGameForm";
 import { CopyInviteButton } from "./CopyInviteButton";
@@ -97,6 +98,10 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
     (m) => m.userId !== session.user?.id
   ).length;
 
+  // Biblioteca Steam do usuário logado (tags "Já Possuo" + filtro).
+  // É relativa ao usuário, não ao grupo: cada membro vê as próprias tags.
+  const library = await getUserLibraryMeta(session.user.id!);
+
   return (
     <div className="mx-auto w-full flex-1 px-6 py-8 sm:px-8 lg:px-12 xl:px-16">
       {/* Header do Grupo */}
@@ -148,7 +153,14 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
       </div>
 
       {/* Kanban Board */}
-      <KanbanBoard games={group.games} groupId={groupId} currentSort={sortParam} />
+      <KanbanBoard
+        games={group.games}
+        groupId={groupId}
+        currentSort={sortParam}
+        ownedAppIds={library.ownedAppIds}
+        steamLinked={library.steamLinked}
+        lastLibrarySyncAt={library.lastLibrarySyncAt?.toISOString() ?? null}
+      />
     </div>
   );
 }

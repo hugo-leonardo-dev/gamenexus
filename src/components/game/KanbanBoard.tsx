@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useGameRefresh } from "@/lib/use-game-refresh";
 import { useMoveGame } from "@/hooks/useMoveGame";
+import { useSteamLibrary } from "@/hooks/useSteamLibrary";
 import { SortableGameCard } from "./SortableGameCard";
 import { GameCard } from "./GameCard";
 import {
@@ -31,7 +32,23 @@ interface KanbanBoardProps {
   games: GameCardData[];
   groupId: string;
   currentSort: string;
+  /** appIds da biblioteca Steam do usuário logado (tags "Já Possuo"). */
+  ownedAppIds: string[];
+  /** Usuário logado tem Steam vinculada? */
+  steamLinked: boolean;
+  /** ISO da última sync (null = nunca sincronizou). */
+  lastLibrarySyncAt: string | null;
 }
+
+// ─── Filtro de posse ─────────────────────────────────────────────────────
+
+const OWNED_FILTER_OPTIONS = [
+  { value: "all", label: "TODOS" },
+  { value: "owned", label: "JÁ POSSUO" },
+  { value: "not_owned", label: "SEM POSSUO" },
+] as const;
+
+type OwnedFilter = (typeof OWNED_FILTER_OPTIONS)[number]["value"];
 
 // ─── Opções de ordenação ──────────────────────────────────────────────
 
@@ -124,7 +141,14 @@ function EmptyColumnDropZone({ status }: { status: string }) {
 
 // ─── Componente principal ────────────────────────────────────────────
 
-export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
+export function KanbanBoard({
+  games,
+  groupId,
+  currentSort,
+  ownedAppIds,
+  steamLinked,
+  lastLibrarySyncAt,
+}: KanbanBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -132,6 +156,17 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
   const { moveGame } = useMoveGame();
   const [draggedGame, setDraggedGame] = useState<GameCardData | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [ownedFilter, setOwnedFilter] = useState<OwnedFilter>("all");
+
+  // Auto-sync na 1ª visita (usuário com Steam que nunca sincronizou).
+  // Após sync bem-sucedida, router.refresh() traz os ownedAppIds novos.
+  const { isSyncing: isLibrarySyncing, error: libraryError } = useSteamLibrary({
+    steamLinked,
+    lastLibrarySyncAt,
+    onSynced: () => router.refresh(),
+  });
+
+  const ownedSet = useMemo(() => new Set(ownedAppIds), [ownedAppIds]);
 
   // Estado local para optimistic updates: inicia com os games do servidor
   const [localGames, setLocalGames] = useState<GameCardData[]>(games);
@@ -155,12 +190,16 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
     [router, searchParams],
   );
 
-  // Filtro por busca textual
+  // Filtro por busca textual + posse (relativa ao usuário logado)
   const filteredGames = useMemo(() => {
-    if (!searchQuery.trim()) return localGames;
     const q = searchQuery.trim().toLowerCase();
-    return localGames.filter((g) => g.title.toLowerCase().includes(q));
-  }, [localGames, searchQuery]);
+    return localGames.filter((g) => {
+      if (q && !g.title.toLowerCase().includes(q)) return false;
+      if (ownedFilter === "owned" && !ownedSet.has(g.steamAppId)) return false;
+      if (ownedFilter === "not_owned" && ownedSet.has(g.steamAppId)) return false;
+      return true;
+    });
+  }, [localGames, searchQuery, ownedFilter, ownedSet]);
 
   // Separa os jogos por coluna
   const gamesByColumn = useMemo(
@@ -321,10 +360,22 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
 
   const totalGames = localGames.length;
   const filteredTotal = filteredGames.length;
-  const hasFilter = searchQuery.trim().length > 0;
+  const hasFilter = searchQuery.trim().length > 0 || ownedFilter !== "all";
 
   return (
     <div className="space-y-4">
+      {/* Erro da auto-sync da biblioteca (ex: perfil privado) — sem travar o Kanban */}
+      {libraryError && (
+        <div
+          role="alert"
+          className="border border-retro-amber/30 bg-retro-amber/10 px-4 py-2.5"
+        >
+          <p className="font-pixel text-[7px] leading-relaxed text-retro-amber">
+            {libraryError}
+          </p>
+        </div>
+      )}
+
       {/* Search + Sort + Status */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Search com terminal prefix */}
@@ -386,7 +437,7 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
             ))}
           </select>
 
-          {isRefreshing && (
+          {(isRefreshing || isLibrarySyncing) && (
             <svg
               className="h-3.5 w-3.5 animate-spin text-retro-primary shrink-0"
               viewBox="0 0 24 24"
@@ -406,6 +457,27 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
+          )}
+
+          {/* Filtro por posse (só aparece para quem tem Steam vinculada) */}
+          {steamLinked && !isLibrarySyncing && (
+            <div className="flex items-center gap-1 border-l border-retro-border/20 pl-2" role="group" aria-label="Filtrar por posse na Steam">
+              {OWNED_FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setOwnedFilter(opt.value)}
+                  aria-pressed={ownedFilter === opt.value}
+                  className={`px-2 py-1 font-pixel text-[7px] transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-retro-primary ${
+                    ownedFilter === opt.value
+                      ? "bg-retro-green/15 text-retro-green pixel-border-sm"
+                      : "text-retro-text-dim hover:text-retro-text"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           )}
 
           <div className="flex items-center gap-1 border-l border-retro-border/20 pl-2">
@@ -472,7 +544,9 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                         </svg>
                       </div>
                       <p className="font-pixel text-[7px] text-retro-text-dim/60">
-                        NENHUM RESULTADO PARA &ldquo;{searchQuery}&rdquo;
+                        {searchQuery.trim()
+                          ? `NENHUM RESULTADO PARA &ldquo;${searchQuery}&rdquo;`
+                          : "NENHUM JOGO NESTE FILTRO"}
                       </p>
                     </div>
                   )}
@@ -489,6 +563,7 @@ export function KanbanBoard({ games, groupId, currentSort }: KanbanBoardProps) {
                           key={game.id}
                           game={game}
                           groupId={groupId}
+                          owned={ownedSet.has(game.steamAppId)}
                           onMoveStatus={(status) =>
                             handleMoveStatus(game.id, status)
                           }

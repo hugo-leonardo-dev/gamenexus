@@ -14,11 +14,13 @@ interface SortableGameCardProps {
   groupId: string;
   onMoveStatus?: (status: string) => void;
   isMoving?: boolean;
+  /** Tag "Já Possuo" (relativa ao usuário logado). */
+  owned?: boolean;
 }
 
 
 
-export function SortableGameCard({ game, groupId, onMoveStatus, isMoving }: SortableGameCardProps) {
+export function SortableGameCard({ game, groupId, onMoveStatus, isMoving, owned }: SortableGameCardProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const [deleting, setDeleting] = useState(false);
@@ -93,6 +95,7 @@ export function SortableGameCard({ game, groupId, onMoveStatus, isMoving }: Sort
       {/* Card com lixeira + mover no footer */}
       <GameCard
         game={game}
+        owned={owned}
         onDelete={() => setShowConfirm(true)}
         deleting={deleting}
         moveMenu={

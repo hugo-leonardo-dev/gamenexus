@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { SteamLoginButton } from "@/components/SteamLoginButton";
 
 // ─── Discord Icon (reutilizável) ─────────────────────────────────────────
 
@@ -77,6 +78,8 @@ export default async function HomePage() {
                 <DiscordIcon />
                 <span>ENTRAR COM DISCORD</span>
               </Link>
+
+              <SteamLoginButton className="inline-flex rounded-lg px-7 py-3.5 font-pixel hover:shadow-[0_0_24px_rgba(102,192,244,0.3)]" />
 
               <Link
                 href="/signup"
@@ -525,6 +528,8 @@ export default async function HomePage() {
                   <DiscordIcon />
                   <span>ENTRAR COM DISCORD</span>
                 </Link>
+
+                <SteamLoginButton className="inline-flex rounded-lg px-8 py-3.5 font-pixel hover:shadow-[0_0_24px_rgba(102,192,244,0.3)]" />
 
                 <Link
                   href="/signup"

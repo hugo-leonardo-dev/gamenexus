@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { SteamLoginButton } from "@/components/SteamLoginButton";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -179,6 +180,11 @@ export default function SignUpPage() {
             <span className="font-pixel text-[7px] text-retro-text-dim">OU</span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-retro-border to-transparent" />
           </div>
+
+          {/* Steam */}
+          <SteamLoginButton />
+
+          <div className="my-4" />
 
           {/* Discord */}
           <button

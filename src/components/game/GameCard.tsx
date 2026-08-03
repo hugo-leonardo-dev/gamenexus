@@ -9,6 +9,8 @@ interface GameCardProps {
   onDelete?: () => void;
   deleting?: boolean;
   moveMenu?: React.ReactNode;
+  /** Relativo ao usuário logado: true se o steamAppId está na biblioteca dele. */
+  owned?: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -48,6 +50,21 @@ function PlayersBadge({ count }: { count: number | null }) {
   );
 }
 
+/** Tag "Já Possuo" — relativa ao usuário logado (biblioteca Steam sincronizada). */
+function OwnedBadge() {
+  return (
+    <span
+      className="inline-flex items-center gap-0.5 rounded-md bg-retro-green/15 px-1.5 py-0.5 font-pixel text-[7px] text-retro-green leading-none"
+      title="Você já possui este jogo na Steam"
+    >
+      <svg className="h-2.5 w-2.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+      </svg>
+      JÁ POSSUO
+    </span>
+  );
+}
+
 function PriceBadge({ game }: { game: GameCardData }) {
   const isDiscounted = game.discountPercent > 0;
   const isFree = game.currentPrice === 0;
@@ -72,10 +89,12 @@ function PriceBadge({ game }: { game: GameCardData }) {
   );
 }
 
-export function GameCard({ game, onDelete, deleting, moveMenu }: GameCardProps) {
+export function GameCard({ game, onDelete, deleting, moveMenu, owned }: GameCardProps) {
   const isDiscounted = game.discountPercent > 0;
   const isFree = game.currentPrice === 0;
   const [imageLoaded, setImageLoaded] = useState(false);
+  // Jogo sem steamAppId (cadastro manual, caso não exista) NUNCA recebe a tag
+  const showOwned = owned === true && Boolean(game.steamAppId);
 
   return (
     <div
@@ -132,6 +151,7 @@ export function GameCard({ game, onDelete, deleting, moveMenu }: GameCardProps) 
         <div className="flex items-center gap-2 flex-wrap mb-1.5 sm:mb-2">
           <PriceBadge game={game} />
           <div className="flex items-center gap-1.5">
+            {showOwned && <OwnedBadge />}
             <ReviewBadge score={game.reviewScore} />
             <PlayersBadge count={game.currentPlayers} />
           </div>
